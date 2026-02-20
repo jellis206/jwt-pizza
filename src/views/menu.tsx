@@ -4,7 +4,7 @@ import View from './view';
 import Card from '../components/card';
 import Button from '../components/button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Franchise, Menu as MenuType, Pizza, Store } from '../service/pizzaService';
+import type { Franchise, Menu as MenuType, Pizza, Store } from '../service/pizzaService';
 
 export default function Menu() {
   const [order, setOrder] = useState(useLocation().state?.order || { items: [] });
@@ -19,7 +19,9 @@ export default function Menu() {
       setMenu(menu);
       const franchiseList = await pizzaService.getFranchises(0, 20, '*');
       const newStoreMap: { [key: string]: { store: Store; franchise: Franchise } } = {};
-      franchiseList.franchises.forEach((franchise) => franchise.stores.forEach((store) => (newStoreMap[store.id] = { store, franchise })));
+      franchiseList.franchises.forEach((franchise) =>
+        franchise.stores.forEach((store) => (newStoreMap[store.id] = { store, franchise }))
+      );
       setStoreMap(newStoreMap);
     })();
   }, []);
@@ -41,10 +43,17 @@ export default function Menu() {
     <View title="Awesome is a click away">
       <form onSubmit={checkout}>
         <div className="flow flow-col text-center justify-center text-neutral-100  py-8 px-4 sm:px-6 lg:px-8">
-          <div className="my-2 sm:my-4">Pick your store and pizzas from below. Remember to order extra for a midnight party.</div>
+          <div className="my-2 sm:my-4">
+            Pick your store and pizzas from below. Remember to order extra for a midnight party.
+          </div>
 
           <div className="text-neutral-800 py-3">
-            <select className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-orange-500 focus:ring-orange-500 " value={selectedStore} required onChange={(e) => setSelectedStore(e.target.value)}>
+            <select
+              className="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-orange-500 focus:ring-orange-500 "
+              value={selectedStore}
+              required
+              onChange={(e) => setSelectedStore(e.target.value)}
+            >
               <option value="">choose store</option>
               {Object.values(storeMap).map((store) => (
                 <option key={store.store.id} value={store.store.id}>
@@ -54,8 +63,18 @@ export default function Menu() {
             </select>
           </div>
 
-          <div className="text-yellow-200">{order.items.length > 0 ? 'Selected pizzas: ' + order.items.length : 'What are you waiting for? Pick a store and then add some pizzas!'}</div>
-          <Button title="Checkout" submit disabled={!selectedStore || order.items.length <= 0} className="disabled:bg-neutral-500 disabled:text-neutral-700" onPress={() => {}} />
+          <div className="text-yellow-200">
+            {order.items.length > 0
+              ? 'Selected pizzas: ' + order.items.length
+              : 'What are you waiting for? Pick a store and then add some pizzas!'}
+          </div>
+          <Button
+            title="Checkout"
+            submit
+            disabled={!selectedStore || order.items.length <= 0}
+            className="disabled:bg-neutral-500 disabled:text-neutral-700"
+            onPress={() => {}}
+          />
 
           <div className="m-4 grid gap-x-8 gap-y-4 sm:gird-cols-1 md:grid-cols-2 lg:grid-cols-4 xlg:grid-cols-5">
             {menu.map((pizza) => (

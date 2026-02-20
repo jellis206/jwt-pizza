@@ -5,7 +5,7 @@ import { pizzaService } from '../service/service';
 import View from './view';
 
 import Button from '../components/button';
-import { Franchise } from '../service/pizzaService';
+import type { Franchise } from '../service/pizzaService';
 
 export default function CreateFranchise() {
   const navigateToParentPath = useBreadcrumb();

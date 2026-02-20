@@ -21,7 +21,8 @@ export default function Carousel(props: Props) {
         {props.slides.map((_, index) => (
           <span
             key={index}
-            className="hs-carousel-active:bg-blue-700 hs-carousel-active:border-blue-700 size-3 border border-gray-400 rounded-full cursor-pointer"></span>
+            className="hs-carousel-active:bg-blue-700 hs-carousel-active:border-blue-700 size-3 border border-gray-400 rounded-full cursor-pointer"
+          ></span>
         ))}
       </div>
     </div>

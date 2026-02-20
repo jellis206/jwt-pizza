@@ -12,7 +12,8 @@ function TrashIcon() {
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -34,9 +35,14 @@ function LocationIcon() {
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+      />
     </svg>
   );
 }
@@ -53,7 +59,8 @@ function CautionIcon() {
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
       <path d="M12 9v4"></path>
       <path d="M12 17h.01"></path>
@@ -73,10 +80,17 @@ function CloseEyeIcon() {
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <path className="hs-password-active:hidden" d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
-      <path className="hs-password-active:hidden" d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
-      <path className="hs-password-active:hidden" d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+      <path
+        className="hs-password-active:hidden"
+        d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"
+      ></path>
+      <path
+        className="hs-password-active:hidden"
+        d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"
+      ></path>
       <line className="hs-password-active:hidden" x1="2" x2="22" y1="2" y2="22"></line>
       <path className="hidden hs-password-active:block" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
       <circle className="hidden hs-password-active:block" cx="12" cy="12" r="3"></circle>
@@ -96,7 +110,8 @@ function KeyIcon() {
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <path d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
     </svg>
   );
@@ -114,7 +129,8 @@ function PersonIcon() {
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
     </svg>
@@ -133,7 +149,8 @@ function EmailIcon() {
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <rect width="20" height="16" x="2" y="4" rx="2" />
       <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
     </svg>
@@ -152,7 +169,8 @@ function HouseIcon() {
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
       <polyline points="9 22 9 12 15 12 15 22"></polyline>
     </svg>
@@ -171,7 +189,8 @@ function StoreIcon() {
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -199,7 +218,8 @@ function HamburgerIcon(props: HamburgerIconProps) {
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <line x1="3" x2="21" y1="6" y2="6" />
       <line x1="3" x2="21" y1="12" y2="12" />
       <line x1="3" x2="21" y1="18" y2="18" />
@@ -223,7 +243,8 @@ function CloseIcon(props: CloseIconProps) {
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <path d="M18 6 6 18" />
       <path d="m6 6 12 12" />
     </svg>
@@ -242,7 +263,8 @@ function GreaterThanIcon() {
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
-      strokeLinejoin="round">
+      strokeLinejoin="round"
+    >
       <path d="m9 18 6-6-6-6"></path>
     </svg>
   );

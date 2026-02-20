@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import View from './view';
 import Button from '../components/button';
 import { pizzaService } from '../service/service';
-import { Order, OrderItem } from '../service/pizzaService';
+import type { Order, OrderItem } from '../service/pizzaService';
 
 export default function Payment() {
   const [errMessage, setErrorMessage] = React.useState('');
@@ -19,14 +19,14 @@ export default function Payment() {
         navigate(loginPath, { state: location.state });
       }
     })();
-  }, []);
+  }, [location.pathname, location.state, navigate]);
 
   async function processPayment() {
     try {
       const confirmation = await pizzaService.order(order);
       navigate('/delivery', { state: { order: confirmation.order, jwt: confirmation.jwt } });
-    } catch (err: any) {
-      setErrorMessage(err.message);
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : 'Unknown error');
     }
   }
 
@@ -38,7 +38,9 @@ export default function Payment() {
     <View title="So worth it">
       <div className="flex flex-col justify-center items-center py-8 px-4 sm:px-6 lg:px-8">
         {errMessage && <div className="text-orange-700 bg-yellow-100 p-2 rounded-md">⚠️ {errMessage}</div>}
-        {!errMessage && order.items.length === 1 && <div className="text-neutral-100  p-2 rounded-md">Send me that pizza right now!</div>}
+        {!errMessage && order.items.length === 1 && (
+          <div className="text-neutral-100  p-2 rounded-md">Send me that pizza right now!</div>
+        )}
         {!errMessage && order.items.length > 1 && (
           <div className="text-neutral-100 p-2 rounded-md">Send me those {order.items.length} pizzas right now!</div>
         )}
@@ -65,8 +67,12 @@ export default function Payment() {
                     <tbody className="divide-y divide-gray-200">
                       {order.items.map((item: OrderItem, index: number) => (
                         <tr key={index} className="hover:bg-gray-100">
-                          <td className="px-6 py-4 whitespace-nowrap text-start text-xs sm:text-sm font-medium text-gray-800">{item.description}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-start text-xs sm:text-sm text-gray-800">{item.price.toLocaleString()} ₿</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-start text-xs sm:text-sm font-medium text-gray-800">
+                            {item.description}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-start text-xs sm:text-sm text-gray-800">
+                            {item.price.toLocaleString()} ₿
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -76,7 +82,7 @@ export default function Payment() {
                           {order.items.length} pie{order.items.length > 1 ? 's' : ''}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                          {order.items.reduce((a: any, c: any) => a + c.price, 0).toLocaleString()} ₿
+                          {order.items.reduce((a: number, c: OrderItem) => a + c.price, 0).toLocaleString()} ₿
                         </td>
                       </tr>
                     </tfoot>

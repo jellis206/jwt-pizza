@@ -87,7 +87,7 @@ type Endpoint = {
   path: string;
   description: string;
   example: string;
-  response: any;
+  response: unknown;
 };
 
 type Endpoints = {
@@ -120,4 +120,21 @@ interface PizzaService {
   docs(docType: string): Promise<Endpoints>;
 }
 
-export { Role, PizzaService, User, Menu, Pizza, OrderHistory, Order, Franchise, FranchiseList, UserList, Store, OrderItem, Endpoint, Endpoints, OrderResponse, JWTPayload };
+export {
+  Role,
+  PizzaService,
+  User,
+  Menu,
+  Pizza,
+  OrderHistory,
+  Order,
+  Franchise,
+  FranchiseList,
+  UserList,
+  Store,
+  OrderItem,
+  Endpoint,
+  Endpoints,
+  OrderResponse,
+  JWTPayload,
+};

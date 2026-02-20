@@ -23,12 +23,13 @@ import NotFound from '../views/notFound';
 import Docs from '../views/docs';
 import Breadcrumb from '../components/breadcrumb';
 import { pizzaService } from '../service/service';
-import { Role, User } from '../service/pizzaService';
+import type { User } from '../service/pizzaService';
+import { Role } from '../service/pizzaService';
 import 'preline/preline';
 
 declare global {
   interface Window {
-    HSStaticMethods: any;
+    HSStaticMethods: { autoInit: () => void };
   }
 }
 
@@ -63,7 +64,12 @@ export default function App() {
 
   const navItems = [
     { title: 'Home', to: '/', component: <Home />, display: [] },
-    { title: 'Diner', to: '/diner-dashboard', component: <DinerDashboard user={user} setUser={setUser} />, display: [] },
+    {
+      title: 'Diner',
+      to: '/diner-dashboard',
+      component: <DinerDashboard user={user} setUser={setUser} />,
+      display: [],
+    },
     { title: 'Order', to: '/menu', component: <Menu />, display: ['nav'] },
     {
       title: 'Franchise',
@@ -74,16 +80,40 @@ export default function App() {
     },
     { title: 'About', to: '/about', component: <About />, display: ['footer'] },
     { title: 'History', to: '/history', component: <History />, display: ['footer'] },
-    { title: 'Admin', to: '/admin-dashboard', component: <AdminDashboard user={user} />, constraints: [isAdmin], display: ['nav'] },
+    {
+      title: 'Admin',
+      to: '/admin-dashboard',
+      component: <AdminDashboard user={user} />,
+      constraints: [isAdmin],
+      display: ['nav'],
+    },
     { title: 'Create franchise', to: '/:subPath?/create-franchise', component: <CreateFranchise />, display: [] },
     { title: 'Close franchise', to: '/:subPath?/close-franchise', component: <CloseFranchise />, display: [] },
     { title: 'Create store', to: '/:subPath?/create-store', component: <CreateStore />, display: [] },
     { title: 'Close store', to: '/:subPath?/close-store', component: <CloseStore />, display: [] },
     { title: 'Payment', to: '/payment', component: <Payment />, display: [] },
     { title: 'Delivery', to: '/delivery', component: <Delivery />, display: [] },
-    { title: 'Login', to: '/:subPath?/login', component: <Login setUser={setUser} />, constraints: [loggedOut], display: ['nav'] },
-    { title: 'Register', to: '/:subPath?/register', component: <Register setUser={setUser} />, constraints: [loggedOut], display: ['nav'] },
-    { title: 'Logout', to: '/:subPath?/logout', component: <Logout setUser={setUser} />, constraints: [loggedIn], display: ['nav'] },
+    {
+      title: 'Login',
+      to: '/:subPath?/login',
+      component: <Login setUser={setUser} />,
+      constraints: [loggedOut],
+      display: ['nav'],
+    },
+    {
+      title: 'Register',
+      to: '/:subPath?/register',
+      component: <Register setUser={setUser} />,
+      constraints: [loggedOut],
+      display: ['nav'],
+    },
+    {
+      title: 'Logout',
+      to: '/:subPath?/logout',
+      component: <Logout setUser={setUser} />,
+      constraints: [loggedIn],
+      display: ['nav'],
+    },
     { title: 'Docs', to: '/docs/:docType?', component: <Docs />, display: [] },
     { title: 'Opps', to: '*', component: <NotFound />, display: [] },
   ];

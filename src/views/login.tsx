@@ -4,7 +4,7 @@ import Button from '../components/button';
 import { pizzaService } from '../service/service';
 import { useBreadcrumb } from '../hooks/appNavigation';
 import View from './view';
-import { User } from '../service/pizzaService';
+import type { User } from '../service/pizzaService';
 
 interface Props {
   setUser: (user: User) => void;
@@ -80,7 +80,11 @@ export default function Login(props: Props) {
                   className="py-3 ps-11 pe-4 block w-full bg-white/10 border-white/20 text-white placeholder:text-white rounded-lg text-sm focus:border-white/30 focus:ring-white/30 sm:p-4 sm:ps-11"
                   placeholder="Password"
                 />
-                <button type="button" data-hs-toggle-password='{"target": "#password"}' className="text-neutral-400 absolute top-0 end-0 p-3 sm:p-4">
+                <button
+                  type="button"
+                  data-hs-toggle-password='{"target": "#password"}'
+                  className="text-neutral-400 absolute top-0 end-0 p-3 sm:p-4"
+                >
                   <CloseEyeIcon />
                 </button>
 

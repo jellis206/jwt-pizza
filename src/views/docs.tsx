@@ -2,7 +2,7 @@ import React from 'react';
 import View from './view';
 import { pizzaService } from '../service/service';
 import { useParams } from 'react-router-dom';
-import { Endpoints } from '../service/pizzaService';
+import type { Endpoints } from '../service/pizzaService';
 
 const apis = [
   { name: 'service', url: import.meta.env.VITE_PIZZA_SERVICE_URL },
@@ -16,7 +16,7 @@ const Docs = () => {
     (async () => {
       setDocs(await pizzaService.docs(docType!));
     })();
-  }, []);
+  }, [docType]);
 
   return (
     <View title="JWT Pizza API">
@@ -34,7 +34,9 @@ const Docs = () => {
             </div>
             <div className="pt-3 overflow-hidden">
               <label className="font-bold">Response</label>
-              <pre className="p-4 bg-neutral-600 text-neutral-50 font-mono text-xs mt-4 mx-4">{JSON.stringify(doc.response, null, 2)}</pre>
+              <pre className="p-4 bg-neutral-600 text-neutral-50 font-mono text-xs mt-4 mx-4">
+                {JSON.stringify(doc.response, null, 2)}
+              </pre>
             </div>
           </div>
         ))}

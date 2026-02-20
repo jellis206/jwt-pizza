@@ -1,5 +1,5 @@
 import httpPizzaService from './httpPizzaService';
-import { PizzaService } from './pizzaService';
+import type { PizzaService } from './pizzaService';
 
 let pizzaService: PizzaService = httpPizzaService;
 export { pizzaService };
