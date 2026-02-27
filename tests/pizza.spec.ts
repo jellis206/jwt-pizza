@@ -1422,4 +1422,71 @@ test.describe('JWT Pizza Tests', () => {
     await page.getByRole('button', { name: 'Cancel' }).click();
     await page.waitForTimeout(500);
   });
+
+  test('docs page with factory docType route parameter', async ({ page }) => {
+    await page.route('**/pizza-factory.cs329.click/api/docs', async (route) => {
+      await route.fulfill({
+        json: {
+          version: '1.0.0',
+          endpoints: [{ method: 'POST', path: '/api/order/verify', description: 'Verify factory order' }],
+        },
+      });
+    });
+    await basicInit(page);
+    await page.goto('/docs/factory');
+    await expect(page.getByRole('main')).toContainText('JWT Pizza API');
+  });
+
+  test('payment shows error when order API returns non-ok response', async ({ page }) => {
+    await basicInit(page);
+
+    // Registered after basicInit so it takes priority (LIFO) for POST requests
+    await page.route('*/**/api/order', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({ status: 500, json: { message: 'Service unavailable' } });
+      } else {
+        await route.fallback();
+      }
+    });
+
+    await page.getByRole('link', { name: 'Login' }).click();
+    await page.getByPlaceholder('Email address').fill('d@jwt.com');
+    await page.getByPlaceholder('Password').fill('a');
+    await page.getByRole('button', { name: 'Login' }).click();
+
+    await page.goto('/menu');
+    await page.locator('select').selectOption('4');
+    await page.getByText('Veggie').first().click();
+    await page.getByRole('button', { name: 'Checkout' }).click();
+    await page.getByRole('button', { name: 'Pay now' }).click();
+
+    await expect(page.getByRole('main')).toContainText('Unknown error');
+  });
+
+  test('verify JWT on delivery page shows valid result', async ({ page }) => {
+    await page.route('**/pizza-factory.cs329.click/api/order/verify', async (route) => {
+      await route.fulfill({
+        json: { message: 'valid', payload: { vendor: { id: '1', name: 'JWT Pizza' } } },
+      });
+    });
+
+    await basicInit(page);
+
+    await page.getByRole('link', { name: 'Login' }).click();
+    await page.getByPlaceholder('Email address').fill('d@jwt.com');
+    await page.getByPlaceholder('Password').fill('a');
+    await page.getByRole('button', { name: 'Login' }).click();
+
+    await page.goto('/menu');
+    await page.locator('select').selectOption('4');
+    await page.getByText('Veggie').first().click();
+    await page.getByRole('button', { name: 'Checkout' }).click();
+    await page.getByRole('button', { name: 'Pay now' }).click();
+
+    await expect(page.getByRole('button', { name: 'Verify' })).toBeVisible();
+    await page.getByRole('button', { name: 'Verify' }).click();
+
+    // After successful verify, JWT display turns green
+    await expect(page.locator('.text-green-500')).toBeVisible();
+  });
 });
