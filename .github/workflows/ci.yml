@@ -94,3 +94,13 @@ jobs:
           echo Deploying $version
           aws s3 cp dist s3://${{ secrets.APP_BUCKET }} --recursive
           aws cloudfront create-invalidation --distribution-id ${{ secrets.DISTRIBUTION_ID }} --paths "/*"
+
+  dast:
+    name: DAST Scan
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Dastardly DAST scan
+        uses: PortSwigger/dastardly-github-action@main
+        with:
+          target-url: ${{ vars.VITE_PIZZA_SERVICE_URL || 'https://pizza.urjellis.com' }}
