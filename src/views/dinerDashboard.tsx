@@ -178,7 +178,7 @@ export default function DinerDashboard(props: Props) {
                   <div className="font-semibold">password:</div>
                   <input
                     id="password"
-                    type="text"
+                    type="password"
                     className="col-span-4 border border-gray-300 rounded-md p-1"
                     defaultValue=""
                     ref={passwordRef}
