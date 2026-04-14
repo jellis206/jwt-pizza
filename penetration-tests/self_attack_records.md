@@ -8,24 +8,40 @@
 
 ## Attack 1 — Default Admin Credentials
 
-| Item           | Result                                                        |
-| -------------- | ------------------------------------------------------------- |
-| Date           | April 11, 2026                                                |
-| Target         | pizza-service.urjellis.com                                    |
-| Classification | A07 Identification and Authentication Failures                |
-| Severity       | 4                                                             |
-| Description    | Attempted login with the default admin credentials hardcoded  |
-|                | in the source code (`a@jwt.com` / `admin`). The login         |
-|                | succeeded, granting full admin access including the ability   |
-|                | to list all users, create/delete franchises, and manage       |
-|                | stores. These credentials are visible in `notes.md` and       |
-|                | `database.js` in the source repository.                       |
-| Images         | See below                                                     |
-| Corrections    | 1) Change the default admin password on first deployment.     |
-|                | 2) Remove hardcoded credentials from source code.             |
-|                | 3) Implement a first-run setup flow that forces a password    |
-|                | change. 4) Add rate limiting specifically on the login        |
-|                | endpoint.                                                     |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 11, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.urjellis.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A07 Identification and Authentication Failures</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>Attempted login with the default admin credentials hardcoded in the source code (<code>a@jwt.com</code> / <code>admin</code>). The login succeeded, granting full admin access including the ability to list all users, create/delete franchises, and manage stores. These credentials are visible in <code>notes.md</code> and <code>database.js</code> in the source repository.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>1) Change the default admin password on first deployment. 2) Remove hardcoded credentials from source code. 3) Implement a first-run setup flow that forces a password change. 4) Add rate limiting specifically on the login endpoint.</td>
+  </tr>
+</table>
 
 **Request:**
 
@@ -75,23 +91,40 @@ curl -s https://pizza-service.urjellis.com/api/franchise \
 
 ## Attack 2 — Unauthenticated Franchise Deletion
 
-| Item           | Result                                                        |
-| -------------- | ------------------------------------------------------------- |
-| Date           | April 11, 2026                                                |
-| Target         | pizza-service.urjellis.com                                    |
-| Classification | A01 Broken Access Control                                     |
-| Severity       | 4                                                             |
-| Description    | The `DELETE /api/franchise/:franchiseId` endpoint has NO       |
-|                | authentication middleware. Any anonymous, unauthenticated      |
-|                | user on the internet can delete any franchise by sending a     |
-|                | DELETE request. First created a test franchise (ID 2) using    |
-|                | admin credentials, then successfully deleted it with NO        |
-|                | Authorization header whatsoever.                               |
-| Images         | See below                                                     |
-| Corrections    | Add `authRouter.authenticateToken` middleware to the DELETE    |
-|                | franchise route in `franchiseRouter.js`, and add an admin     |
-|                | role check (`if (!req.user.isRole(Role.Admin)) return         |
-|                | res.status(403)...`).                                         |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 11, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.urjellis.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A01 Broken Access Control</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>The <code>DELETE /api/franchise/:franchiseId</code> endpoint has NO authentication middleware. Any anonymous, unauthenticated user on the internet can delete any franchise by sending a DELETE request. First created a test franchise (ID 2) using admin credentials, then successfully deleted it with NO Authorization header whatsoever.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>Add <code>authRouter.authenticateToken</code> middleware to the DELETE franchise route in <code>franchiseRouter.js</code>, and add an admin role check (<code>if (!req.user.isRole(Role.Admin)) return res.status(403)...</code>).</td>
+  </tr>
+</table>
 
 **Setup — Created test franchise with admin token:**
 
@@ -135,27 +168,40 @@ HTTP_CODE: 200
 
 ## Attack 3 — SQL Injection via User Update
 
-| Item           | Result                                                        |
-| -------------- | ------------------------------------------------------------- |
-| Date           | April 11, 2026                                                |
-| Target         | pizza-service.urjellis.com                                    |
-| Classification | A03 Injection                                                 |
-| Severity       | 4                                                             |
-| Description    | The `PUT /api/user/:userId` endpoint uses string              |
-|                | concatenation (not parameterized queries) to build SQL        |
-|                | UPDATE statements. By injecting `admin'-- ` in the `name`    |
-|                | field, the WHERE clause was commented out, causing the        |
-|                | UPDATE to modify the **admin account** (user ID 1) instead   |
-|                | of the authenticated user (ID 5). The server returned an      |
-|                | admin-role JWT, effectively granting privilege escalation      |
-|                | from diner to admin. Additionally, error-based payloads       |
-|                | revealed full SQL query structure, table names, and column    |
-|                | names through stack traces.                                   |
-| Images         | See below                                                     |
-| Corrections    | 1) Use parameterized queries (`?` placeholders) in            |
-|                | `database.js:updateUser()`. 2) Never concatenate user input   |
-|                | into SQL strings. 3) Disable stack trace exposure in          |
-|                | production error responses.                                   |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 11, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.urjellis.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A03 Injection</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>The <code>PUT /api/user/:userId</code> endpoint uses string concatenation (not parameterized queries) to build SQL UPDATE statements. By injecting <code>admin'-- </code> in the <code>name</code> field, the WHERE clause was commented out, causing the UPDATE to modify the <strong>admin account</strong> (user ID 1) instead of the authenticated user (ID 5). The server returned an admin-role JWT, effectively granting privilege escalation from diner to admin. Additionally, error-based payloads revealed full SQL query structure, table names, and column names through stack traces.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>1) Use parameterized queries (<code>?</code> placeholders) in <code>database.js:updateUser()</code>. 2) Never concatenate user input into SQL strings. 3) Disable stack trace exposure in production error responses.</td>
+  </tr>
+</table>
 
 **Payload 1 — SQL comment injection in name field (CRITICAL: privilege escalation):**
 
@@ -202,22 +248,40 @@ curl -s -X PUT https://pizza-service.urjellis.com/api/user/5 \
 
 ## Attack 4 — Order Pizza for $0 (Client-Side Price Manipulation)
 
-| Item           | Result                                                        |
-| -------------- | ------------------------------------------------------------- |
-| Date           | April 11, 2026                                                |
-| Target         | pizza-service.urjellis.com                                    |
-| Classification | A04 Insecure Design                                           |
-| Severity       | 3                                                             |
-| Description    | The server accepts order prices directly from the client      |
-|                | without validating them against the menu database. Submitted  |
-|                | an order for a Veggie pizza at price 0.0001 (real price:      |
-|                | 0.0038) and the order was accepted. The pizza factory even    |
-|                | issued a valid verification JWT for the fraudulent order. An  |
-|                | attacker can order unlimited pizzas for essentially free.     |
-| Images         | See below                                                     |
-| Corrections    | Server-side price validation: look up the actual price from   |
-|                | the `menu` table using the `menuId` and ignore the            |
-|                | client-supplied `price` field entirely.                       |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 11, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.urjellis.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A04 Insecure Design</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>The server accepts order prices directly from the client without validating them against the menu database. Submitted an order for a Veggie pizza at price 0.0001 (real price: 0.0038) and the order was accepted. The pizza factory even issued a valid verification JWT for the fraudulent order. An attacker can order unlimited pizzas for essentially free.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>Server-side price validation: look up the actual price from the <code>menu</code> table using the <code>menuId</code> and ignore the client-supplied <code>price</code> field entirely.</td>
+  </tr>
+</table>
 
 **Menu shows real prices:**
 
@@ -258,26 +322,40 @@ curl -s -X POST https://pizza-service.urjellis.com/api/order \
 
 ## Attack 5 — JWT Forgery with Default Secret
 
-| Item           | Result                                                        |
-| -------------- | ------------------------------------------------------------- |
-| Date           | April 11, 2026                                                |
-| Target         | pizza-service.urjellis.com                                    |
-| Classification | A02 Cryptographic Failures                                    |
-| Severity       | 0                                                             |
-| Description    | The source code `.env` file contains                          |
-|                | `JWT_SECRET=dev-secret-key-change-in-production`. Attempted   |
-|                | to forge an admin JWT using this default secret and also      |
-|                | attempted an `alg:none` attack. Both forged tokens were       |
-|                | rejected by the production server, indicating the JWT secret  |
-|                | was changed for production deployment. The vulnerability      |
-|                | exists in the source code but is not exploitable in this      |
-|                | deployment.                                                   |
-| Images         | See below                                                     |
-| Corrections    | 1) Remove the default secret from `.env` — use               |
-|                | environment-variable-only injection. 2) Add `.env` to         |
-|                | `.gitignore`. 3) Use a cryptographically random secret of at  |
-|                | least 256 bits. 4) Add JWT expiration (`expiresIn`) to token  |
-|                | signing.                                                      |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 11, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.urjellis.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A02 Cryptographic Failures</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>The source code <code>.env</code> file contains <code>JWT_SECRET=dev-secret-key-change-in-production</code>. Attempted to forge an admin JWT using this default secret and also attempted an <code>alg:none</code> attack. Both forged tokens were rejected by the production server, indicating the JWT secret was changed for production deployment. The vulnerability exists in the source code but is not exploitable in this deployment.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>1) Remove the default secret from <code>.env</code> — use environment-variable-only injection. 2) Add <code>.env</code> to <code>.gitignore</code>. 3) Use a cryptographically random secret of at least 256 bits. 4) Add JWT expiration (<code>expiresIn</code>) to token signing.</td>
+  </tr>
+</table>
 
 **Forged token with default secret:**
 
@@ -317,23 +395,40 @@ curl -s https://pizza-service.urjellis.com/api/user/me \
 
 ## Attack 6 — CORS Origin Reflection (Bonus)
 
-| Item           | Result                                                        |
-| -------------- | ------------------------------------------------------------- |
-| Date           | April 11, 2026                                                |
-| Target         | pizza-service.urjellis.com                                    |
-| Classification | A05 Security Misconfiguration                                 |
-| Severity       | 3                                                             |
-| Description    | The server reflects ANY `Origin` header as                    |
-|                | `Access-Control-Allow-Origin` with                            |
-|                | `Access-Control-Allow-Credentials: true`. This means any      |
-|                | malicious website can make authenticated cross-origin          |
-|                | requests to the pizza API, stealing user data or performing   |
-|                | actions on their behalf. A phishing site could silently order |
-|                | pizzas, delete franchises, or exfiltrate user tokens.         |
-| Images         | See below                                                     |
-| Corrections    | Configure CORS to allow only the specific frontend origin     |
-|                | (`https://pizza.urjellis.com`). Never reflect arbitrary       |
-|                | origins with `credentials: true`.                             |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 11, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.urjellis.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A05 Security Misconfiguration</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>The server reflects ANY <code>Origin</code> header as <code>Access-Control-Allow-Origin</code> with <code>Access-Control-Allow-Credentials: true</code>. This means any malicious website can make authenticated cross-origin requests to the pizza API, stealing user data or performing actions on their behalf. A phishing site could silently order pizzas, delete franchises, or exfiltrate user tokens.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>Configure CORS to allow only the specific frontend origin (<code>https://pizza.urjellis.com</code>). Never reflect arbitrary origins with <code>credentials: true</code>.</td>
+  </tr>
+</table>
 
 **Request from malicious origin:**
 
@@ -357,22 +452,40 @@ access-control-allow-credentials: true
 
 ## Attack 7 — Stack Trace / Information Disclosure (Bonus)
 
-| Item           | Result                                                        |
-| -------------- | ------------------------------------------------------------- |
-| Date           | April 11, 2026                                                |
-| Target         | pizza-service.urjellis.com                                    |
-| Classification | A05 Security Misconfiguration                                 |
-| Severity       | 2                                                             |
-| Description    | Error responses include full Node.js stack traces, exposing   |
-|                | internal file paths, dependency versions, database driver     |
-|                | details, and application structure. An attacker can use this  |
-|                | to map the internal architecture and plan targeted attacks.   |
-|                | This was observed in both the JSON parse error and the SQL    |
-|                | injection error responses.                                    |
-| Images         | See below                                                     |
-| Corrections    | Set `NODE_ENV=production` and configure the Express error     |
-|                | handler to omit `stack` from responses in production. Only    |
-|                | log stack traces server-side.                                 |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 11, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.urjellis.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A05 Security Misconfiguration</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>Error responses include full Node.js stack traces, exposing internal file paths, dependency versions, database driver details, and application structure. An attacker can use this to map the internal architecture and plan targeted attacks. This was observed in both the JSON parse error and the SQL injection error responses.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>Set <code>NODE_ENV=production</code> and configure the Express error handler to omit <code>stack</code> from responses in production. Only log stack traces server-side.</td>
+  </tr>
+</table>
 
 **Trigger — Send malformed JSON:**
 
@@ -397,15 +510,64 @@ curl -s -X POST https://pizza-service.urjellis.com/api/auth \
 
 ## Summary of Findings
 
-| #   | Attack                             | OWASP Category                | Severity | Exploitable? |
-| --- | ---------------------------------- | ----------------------------- | -------- | ------------ |
-| 1   | Default Admin Credentials          | A07 Authentication Failures   | 4        | YES          |
-| 2   | Unauthenticated Franchise Deletion | A01 Broken Access Control     | 4        | YES          |
-| 3   | SQL Injection (Priv. Escalation)   | A03 Injection                 | 4        | YES          |
-| 4   | Zero-Price Order                   | A04 Insecure Design           | 3        | YES          |
-| 5   | JWT Forgery (Default Secret)       | A02 Cryptographic Failures    | 0        | NO (patched) |
-| 6   | CORS Origin Reflection             | A05 Security Misconfiguration | 3        | YES          |
-| 7   | Stack Trace Disclosure             | A05 Security Misconfiguration | 2        | YES          |
+<table>
+  <tr>
+    <th>#</th>
+    <th>Attack</th>
+    <th>OWASP Category</th>
+    <th>Severity</th>
+    <th>Exploitable?</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>Default Admin Credentials</td>
+    <td>A07 Authentication Failures</td>
+    <td>4</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Unauthenticated Franchise Deletion</td>
+    <td>A01 Broken Access Control</td>
+    <td>4</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>SQL Injection (Priv. Escalation)</td>
+    <td>A03 Injection</td>
+    <td>4</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>Zero-Price Order</td>
+    <td>A04 Insecure Design</td>
+    <td>3</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>JWT Forgery (Default Secret)</td>
+    <td>A02 Cryptographic Failures</td>
+    <td>0</td>
+    <td>NO (patched)</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>CORS Origin Reflection</td>
+    <td>A05 Security Misconfiguration</td>
+    <td>3</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td>Stack Trace Disclosure</td>
+    <td>A05 Security Misconfiguration</td>
+    <td>2</td>
+    <td>YES</td>
+  </tr>
+</table>
 
 ## Recommended Code Fixes
 

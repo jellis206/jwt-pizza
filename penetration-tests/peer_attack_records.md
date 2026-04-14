@@ -8,27 +8,40 @@
 
 ## Attack 1 — SQL Injection via User Update (Privilege Escalation)
 
-| Item           | Result                                                     |
-| -------------- | ---------------------------------------------------------- |
-| Date           | April 13, 2026                                             |
-| Target         | pizza-service.marcosotomarino.com                          |
-| Classification | A03 Injection                                              |
-| Severity       | 4                                                          |
-| Description    | The `PUT /api/user/:userId` endpoint uses string           |
-|                | concatenation to build SQL UPDATE statements. By injecting |
-|                | `admin'-- ` in the `name` field, the WHERE clause is       |
-|                | commented out, causing the UPDATE to modify user ID 1      |
-|                | instead of the authenticated user (ID 17). The server      |
-|                | returned a JWT for user ID 1, proving privilege escalation |
-|                | from a regular diner account to another user's identity.   |
-|                | Error-based injection also revealed the full SQL query     |
-|                | structure, table names, column names, and internal file    |
-|                | paths through stack traces.                                |
-| Images         | See below                                                  |
-| Corrections    | Use parameterized queries (`?` placeholders) in            |
-|                | `database.js:updateUser()`. Never concatenate user input   |
-|                | into SQL strings. Disable stack trace exposure in          |
-|                | production error responses.                                |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 13, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.marcosotomarino.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A03 Injection</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>The <code>PUT /api/user/:userId</code> endpoint uses string concatenation to build SQL UPDATE statements. By injecting <code>admin'-- </code> in the <code>name</code> field, the WHERE clause is commented out, causing the UPDATE to modify user ID 1 instead of the authenticated user (ID 17). The server returned a JWT for user ID 1, proving privilege escalation from a regular diner account to another user's identity. Error-based injection also revealed the full SQL query structure, table names, column names, and internal file paths through stack traces.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>Use parameterized queries (<code>?</code> placeholders) in <code>database.js:updateUser()</code>. Never concatenate user input into SQL strings. Disable stack trace exposure in production error responses.</td>
+  </tr>
+</table>
 
 **Payload — SQL comment injection in name field:**
 
@@ -83,23 +96,40 @@ curl -s -X PUT "https://pizza-service.marcosotomarino.com/api/user/17" \
 
 ## Attack 2 — Unauthenticated Franchise Deletion
 
-| Item           | Result                                                      |
-| -------------- | ----------------------------------------------------------- |
-| Date           | April 13, 2026                                              |
-| Target         | pizza-service.marcosotomarino.com                           |
-| Classification | A01 Broken Access Control                                   |
-| Severity       | 4                                                           |
-| Description    | The `DELETE /api/franchise/:franchiseId` endpoint has no    |
-|                | authentication middleware. Sent a DELETE request to         |
-|                | franchise ID 3 ("Provo") with absolutely no Authorization   |
-|                | header. The server returned 200 OK and deleted the          |
-|                | franchise. Any anonymous user on the internet can destroy   |
-|                | business data. Notably, `POST /api/franchise` DOES require  |
-|                | auth + admin role (403), so only the DELETE is unprotected. |
-| Images         | See below                                                   |
-| Corrections    | Add `authRouter.authenticateToken` middleware and an admin  |
-|                | role check to the DELETE `/api/franchise/:franchiseId`      |
-|                | route in `franchiseRouter.js`.                              |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 13, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.marcosotomarino.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A01 Broken Access Control</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>The <code>DELETE /api/franchise/:franchiseId</code> endpoint has no authentication middleware. Sent a DELETE request to franchise ID 3 ("Provo") with absolutely no Authorization header. The server returned 200 OK and deleted the franchise. Any anonymous user on the internet can destroy business data. Notably, <code>POST /api/franchise</code> DOES require auth + admin role (403), so only the DELETE is unprotected.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>Add <code>authRouter.authenticateToken</code> middleware and an admin role check to the DELETE <code>/api/franchise/:franchiseId</code> route in <code>franchiseRouter.js</code>.</td>
+  </tr>
+</table>
 
 **Franchises before attack:**
 
@@ -146,24 +176,40 @@ HTTP_CODE: 200
 
 ## Attack 3 — Order Pizza for $0 and Negative Prices
 
-| Item           | Result                                                      |
-| -------------- | ----------------------------------------------------------- |
-| Date           | April 13, 2026                                              |
-| Target         | pizza-service.marcosotomarino.com                           |
-| Classification | A04 Insecure Design                                         |
-| Severity       | 3                                                           |
-| Description    | The server accepts order prices directly from the client    |
-|                | without validating against the menu database. Submitted an  |
-|                | order for a Veggie pizza at price 0.0001 (real price:       |
-|                | 0.0038) and the order was accepted. The pizza factory       |
-|                | issued a valid verification JWT. Also tested with a         |
-|                | negative price of -100, which was also accepted. In a real  |
-|                | system, negative prices could credit money to the attacker. |
-| Images         | See below                                                   |
-| Corrections    | Server-side price validation: look up the actual price from |
-|                | the `menu` table using the `menuId` and ignore the          |
-|                | client-supplied `price` field. Reject negative and zero     |
-|                | prices.                                                     |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 13, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.marcosotomarino.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A04 Insecure Design</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>The server accepts order prices directly from the client without validating against the menu database. Submitted an order for a Veggie pizza at price 0.0001 (real price: 0.0038) and the order was accepted. The pizza factory issued a valid verification JWT. Also tested with a negative price of -100, which was also accepted. In a real system, negative prices could credit money to the attacker.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>Server-side price validation: look up the actual price from the <code>menu</code> table using the <code>menuId</code> and ignore the client-supplied <code>price</code> field. Reject negative and zero prices.</td>
+  </tr>
+</table>
 
 **Menu shows real prices:**
 
@@ -231,27 +277,40 @@ curl -s -X POST https://pizza-service.marcosotomarino.com/api/order \
 
 ## Attack 4 — Information Disclosure & Security Misconfiguration
 
-| Item           | Result                                                      |
-| -------------- | ----------------------------------------------------------- |
-| Date           | April 13, 2026                                              |
-| Target         | pizza-service.marcosotomarino.com                           |
-| Classification | A05 Security Misconfiguration                               |
-| Severity       | 2                                                           |
-| Description    | Multiple misconfiguration issues leak internal architecture |
-|                | details. The `/api/docs` endpoint publicly exposes the AWS  |
-|                | RDS database hostname. All error responses include full     |
-|                | Node.js stack traces revealing file paths, module versions, |
-|                | and application structure. The server exposes               |
-|                | `X-Powered-By: Express` and is missing all standard         |
-|                | security headers (CSP, HSTS, X-Frame-Options). CORS is      |
-|                | configured to reflect any origin with `credentials: true`,  |
-|                | allowing cross-origin credential theft from any website.    |
-| Images         | See below                                                   |
-| Corrections    | 1) Remove DB hostname from `/api/docs`. 2) Set              |
-|                | `NODE_ENV=production` and strip `stack` from error          |
-|                | responses. 3) Remove `X-Powered-By` header. 4) Add CSP,     |
-|                | HSTS, X-Frame-Options headers. 5) Configure CORS to         |
-|                | allow only the production frontend origin.                  |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 13, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.marcosotomarino.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A05 Security Misconfiguration</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>Multiple misconfiguration issues leak internal architecture details. The <code>/api/docs</code> endpoint publicly exposes the AWS RDS database hostname. All error responses include full Node.js stack traces revealing file paths, module versions, and application structure. The server exposes <code>X-Powered-By: Express</code> and is missing all standard security headers (CSP, HSTS, X-Frame-Options). CORS is configured to reflect any origin with <code>credentials: true</code>, allowing cross-origin credential theft from any website.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>1) Remove DB hostname from <code>/api/docs</code>. 2) Set <code>NODE_ENV=production</code> and strip <code>stack</code> from error responses. 3) Remove <code>X-Powered-By</code> header. 4) Add CSP, HSTS, X-Frame-Options headers. 5) Configure CORS to allow only the production frontend origin.</td>
+  </tr>
+</table>
 
 **4a. Database hostname leaked in /api/docs:**
 
@@ -339,26 +398,40 @@ access-control-allow-credentials: true
 
 ## Attack 5 — JWT Forgery Attempt (Default Secret)
 
-| Item           | Result                                                      |
-| -------------- | ----------------------------------------------------------- |
-| Date           | April 13, 2026                                              |
-| Target         | pizza-service.marcosotomarino.com                           |
-| Classification | A02 Cryptographic Failures                                  |
-| Severity       | 0                                                           |
-| Description    | The source code `.env` file contains                        |
-|                | `JWT_SECRET=dev-secret-key-change-in-production`. Attempted |
-|                | to forge an admin JWT using this default secret and also    |
-|                | tried 10 other common secrets (secret, password, changeme,  |
-|                | pizza, jwt-secret, etc.). All forged tokens were rejected   |
-|                | by the production server, confirming Marco changed the JWT  |
-|                | secret for production. However, JWT tokens still have no    |
-|                | `exp` claim — tokens never expire, meaning a stolen token   |
-|                | is valid forever.                                           |
-| Images         | See below                                                   |
-| Corrections    | 1) Remove the default secret from `.env` — use              |
-|                | environment-variable-only injection. 2) Add `.env` to       |
-|                | `.gitignore`. 3) Add JWT expiration (`expiresIn: '1h'`)     |
-|                | to `jwt.sign()` calls.                                      |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 13, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.marcosotomarino.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A02 Cryptographic Failures</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>0</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>The source code <code>.env</code> file contains <code>JWT_SECRET=dev-secret-key-change-in-production</code>. Attempted to forge an admin JWT using this default secret and also tried 10 other common secrets (secret, password, changeme, pizza, jwt-secret, etc.). All forged tokens were rejected by the production server, confirming Marco changed the JWT secret for production. However, JWT tokens still have no <code>exp</code> claim — tokens never expire, meaning a stolen token is valid forever.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>1) Remove the default secret from <code>.env</code> — use environment-variable-only injection. 2) Add <code>.env</code> to <code>.gitignore</code>. 3) Add JWT expiration (<code>expiresIn: '1h'</code>) to <code>jwt.sign()</code> calls.</td>
+  </tr>
+</table>
 
 **Forged admin token with default secret:**
 
@@ -419,28 +492,40 @@ Secret 'supersecret': {"message":"unauthorized"}
 
 ## Attack 6 — CORS Cross-Origin Credential Theft (A05 Security Misconfiguration)
 
-| Item           | Result                                                        |
-| -------------- | ------------------------------------------------------------- |
-| Date           | April 13, 2026                                                |
-| Target         | pizza-service.marcosotomarino.com                             |
-| Classification | A05 Security Misconfiguration                                 |
-| Severity       | 3                                                             |
-| Description    | The API reflects any `Origin` header verbatim in              |
-|                | `Access-Control-Allow-Origin` with                            |
-|                | `Access-Control-Allow-Credentials: true` on all endpoints.    |
-|                | Preflight `OPTIONS` requests also reflect the evil origin     |
-|                | and approve all methods (GET, POST, PUT, DELETE). This means  |
-|                | a malicious website can make fully authenticated cross-origin |
-|                | requests on behalf of any logged-in user. An attacker hosts   |
-|                | `evil-attacker.com`, the victim visits it while logged into   |
-|                | JWT Pizza, and the attacker's JavaScript reads the victim's   |
-|                | orders, profile, and JWT token, or performs actions (place    |
-|                | orders, delete franchises) as the victim.                     |
-| Images         | See below                                                     |
-| Corrections    | Configure CORS to allow only the production frontend origin   |
-|                | (`https://pizza.marcosotomarino.com`). Remove the wildcard    |
-|                | origin reflection. If multiple origins are needed, maintain   |
-|                | an explicit allowlist and check against it.                   |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 13, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.marcosotomarino.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A05 Security Misconfiguration</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>The API reflects any <code>Origin</code> header verbatim in <code>Access-Control-Allow-Origin</code> with <code>Access-Control-Allow-Credentials: true</code> on all endpoints. Preflight <code>OPTIONS</code> requests also reflect the evil origin and approve all methods (GET, POST, PUT, DELETE). This means a malicious website can make fully authenticated cross-origin requests on behalf of any logged-in user. An attacker hosts <code>evil-attacker.com</code>, the victim visits it while logged into JWT Pizza, and the attacker's JavaScript reads the victim's orders, profile, and JWT token, or performs actions (place orders, delete franchises) as the victim.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>Configure CORS to allow only the production frontend origin (<code>https://pizza.marcosotomarino.com</code>). Remove the wildcard origin reflection. If multiple origins are needed, maintain an explicit allowlist and check against it.</td>
+  </tr>
+</table>
 
 **6a. Origin reflection on authenticated endpoint:**
 
@@ -529,29 +614,40 @@ An attacker hosts this on `https://evil-attacker.com`:
 
 ## Attack 7 — SQL Injection via LIMIT/OFFSET Parameters (A03 Injection)
 
-| Item           | Result                                                       |
-| -------------- | ------------------------------------------------------------ |
-| Date           | April 13, 2026                                               |
-| Target         | pizza-service.marcosotomarino.com                            |
-| Classification | A03 Injection                                                |
-| Severity       | 2                                                            |
-| Description    | The `page` query parameter on `GET /api/order` and           |
-|                | `GET /api/franchise` is interpolated into SQL LIMIT/OFFSET   |
-|                | clauses via template literals without validation. Injecting  |
-|                | non-numeric values causes "Undeclared variable: NaN" errors  |
-|                | with full stack traces. A negative page value (`-1`) causes  |
-|                | a SQL syntax error that reveals the LIMIT/OFFSET structure   |
-|                | (`near '-20,10'`). While JavaScript's type coercion to NaN   |
-|                | prevents direct UNION-based extraction, the error messages   |
-|                | leak internal file paths (`database.js:475`, `database.js:   |
-|                | 223`, `orderRouter.js:117`, `franchiseRouter.js:83`) and     |
-|                | confirm the query pattern. This is a separate injection      |
-|                | point from the `PUT /api/user` vulnerability (Attack 1).     |
-| Images         | See below                                                    |
-| Corrections    | Parse `page` with `parseInt()` and validate it is a positive |
-|                | integer before use. Use parameterized queries for LIMIT and  |
-|                | OFFSET values. Return generic error messages without stack   |
-|                | traces.                                                      |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 13, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.marcosotomarino.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A03 Injection</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>The <code>page</code> query parameter on <code>GET /api/order</code> and <code>GET /api/franchise</code> is interpolated into SQL LIMIT/OFFSET clauses via template literals without validation. Injecting non-numeric values causes "Undeclared variable: NaN" errors with full stack traces. A negative page value (<code>-1</code>) causes a SQL syntax error that reveals the LIMIT/OFFSET structure (<code>near '-20,10'</code>). While JavaScript's type coercion to NaN prevents direct UNION-based extraction, the error messages leak internal file paths (<code>database.js:475</code>, <code>database.js:223</code>, <code>orderRouter.js:117</code>, <code>franchiseRouter.js:83</code>) and confirm the query pattern. This is a separate injection point from the <code>PUT /api/user</code> vulnerability (Attack 1).</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>Parse <code>page</code> with <code>parseInt()</code> and validate it is a positive integer before use. Use parameterized queries for LIMIT and OFFSET values. Return generic error messages without stack traces.</td>
+  </tr>
+</table>
 
 **7a. SQL injection string in page parameter (orders):**
 
@@ -607,30 +703,40 @@ curl -s "https://pizza-service.marcosotomarino.com/api/franchise?page=1%3B%20SEL
 
 ## Attack 8 — SQL Injection: Full Database Extraction (A03 Injection)
 
-| Item           | Result                                                         |
-| -------------- | -------------------------------------------------------------- |
-| Date           | April 13, 2026                                                 |
-| Target         | pizza-service.marcosotomarino.com                              |
-| Classification | A03 Injection                                                  |
-| Severity       | 4                                                              |
-| Description    | Extending Attack 1's SQL injection in `PUT /api/user/:userId`, |
-|                | used a nested subquery technique to bypass MySQL's             |
-|                | "can't specify target table for update in FROM clause"         |
-|                | restriction. Injected `name='x', name=(SELECT x FROM           |
-|                | (SELECT password AS x FROM user WHERE id=N) AS tmp)            |
-|                | WHERE id=22-- ` to extract data from any table and return      |
-|                | it in the API response. Successfully extracted: (1) the        |
-|                | full database schema (8 tables), (2) bcrypt password hashes    |
-|                | for all 3 privileged accounts (admin + franchisee),            |
-|                | (3) complete user role mapping for all 22 users, and           |
-|                | (4) email addresses for all users. With the password hashes,   |
-|                | an offline brute-force attack could recover plaintext          |
-|                | passwords for the admin accounts.                              |
-| Images         | See below                                                      |
-| Corrections    | Use parameterized queries (`?` placeholders) in                |
-|                | `database.js:updateUser()`. This single fix blocks all SQL     |
-|                | injection variants (privilege escalation, data extraction,     |
-|                | and error-based disclosure).                                   |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 13, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.marcosotomarino.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A03 Injection</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>Extending Attack 1's SQL injection in <code>PUT /api/user/:userId</code>, used a nested subquery technique to bypass MySQL's "can't specify target table for update in FROM clause" restriction. Injected <code>name='x', name=(SELECT x FROM (SELECT password AS x FROM user WHERE id=N) AS tmp) WHERE id=22-- </code> to extract data from any table and return it in the API response. Successfully extracted: (1) the full database schema (8 tables), (2) bcrypt password hashes for all 3 privileged accounts (admin + franchisee), (3) complete user role mapping for all 22 users, and (4) email addresses for all users. With the password hashes, an offline brute-force attack could recover plaintext passwords for the admin accounts.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>Use parameterized queries (<code>?</code> placeholders) in <code>database.js:updateUser()</code>. This single fix blocks all SQL injection variants (privilege escalation, data extraction, and error-based disclosure).</td>
+  </tr>
+</table>
 
 **8a. Extract database schema — all table names:**
 
@@ -748,30 +854,40 @@ UPDATE user SET name='x', name=(SELECT x FROM (SELECT password AS x FROM user WH
 
 ## Attack 9 — Frontend Admin Dashboard Disclosure (A01 Broken Access Control)
 
-| Item           | Result                                                          |
-| -------------- | --------------------------------------------------------------- |
-| Date           | April 13, 2026                                                  |
-| Target         | pizza.marcosotomarino.com                                       |
-| Classification | A01 Broken Access Control                                       |
-| Severity       | 2                                                               |
-| Description    | The frontend is a React SPA served from CloudFront/S3. All      |
-|                | routes, including `/admin-dashboard`, serve the same            |
-|                | `index.html` with the full JavaScript bundle. Any               |
-|                | unauthenticated user can navigate directly to                   |
-|                | `https://pizza.marcosotomarino.com/admin-dashboard` and the     |
-|                | browser renders the admin UI components, revealing the admin    |
-|                | interface structure, API endpoint patterns, franchise/store     |
-|                | management schemas, and user management functionality.          |
-|                | Additionally, `robots.txt` explicitly lists `/admin-dashboard/` |
-|                | and `/docs/` as disallowed, advertising these sensitive paths   |
-|                | to attackers. Route protection is client-side only (React       |
-|                | nav link visibility), not enforced at the route level.          |
-| Images         | See below                                                       |
-| Corrections    | 1) Add a React route guard component that checks auth state     |
-|                | and admin role before rendering admin routes — redirect         |
-|                | unauthorized users. 2) Remove sensitive paths from              |
-|                | `robots.txt`. 3) Consider server-side rendering or an auth      |
-|                | gateway for admin routes.                                       |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 13, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza.marcosotomarino.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A01 Broken Access Control</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>The frontend is a React SPA served from CloudFront/S3. All routes, including <code>/admin-dashboard</code>, serve the same <code>index.html</code> with the full JavaScript bundle. Any unauthenticated user can navigate directly to <code>https://pizza.marcosotomarino.com/admin-dashboard</code> and the browser renders the admin UI components, revealing the admin interface structure, API endpoint patterns, franchise/store management schemas, and user management functionality. Additionally, <code>robots.txt</code> explicitly lists <code>/admin-dashboard/</code> and <code>/docs/</code> as disallowed, advertising these sensitive paths to attackers. Route protection is client-side only (React nav link visibility), not enforced at the route level.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>1) Add a React route guard component that checks auth state and admin role before rendering admin routes — redirect unauthorized users. 2) Remove sensitive paths from <code>robots.txt</code>. 3) Consider server-side rendering or an auth gateway for admin routes.</td>
+  </tr>
+</table>
 
 **9a. Admin dashboard accessible without authentication:**
 
@@ -833,29 +949,40 @@ curl -s "https://pizza.marcosotomarino.com/version.json"
 
 ## Attack 10 — Full Kill Chain: SQLi to Admin Takeover to Franchise Creation (A03 + A01)
 
-| Item           | Result                                                       |
-| -------------- | ------------------------------------------------------------ |
-| Date           | April 13, 2026                                               |
-| Target         | pizza-service.marcosotomarino.com                            |
-| Classification | A03 Injection / A01 Broken Access Control                    |
-| Severity       | 4                                                            |
-| Description    | Demonstrated a complete attack chain from a self-registered  |
-|                | diner account to full admin control. Used the SQL injection  |
-|                | vulnerability (Attacks 1/8) to: (1) enumerate user roles and |
-|                | identify admin accounts (user 2 = admin + franchisee),       |
-|                | (2) overwrite the admin's email and password via SQLi by     |
-|                | copying pentest3's known password hash onto user 2, and      |
-|                | (3) log in as the admin. With the admin JWT, created a new   |
-|                | franchise ("Pwned Pizza", ID 4) and added a store ("Hacker   |
-|                | HQ", store ID 2) — proving full administrative control over  |
-|                | the business. This is a complete privilege escalation from   |
-|                | anonymous registration to admin with persistent business     |
-|                | impact.                                                      |
-| Images         | See below                                                    |
-| Corrections    | Fix the root cause: parameterized queries in                 |
-|                | `database.js:updateUser()`. Without SQL injection, this      |
-|                | entire chain is impossible. Additionally, admin credential   |
-|                | changes should require re-authentication or MFA.             |
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Result</th>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td>April 13, 2026</td>
+  </tr>
+  <tr>
+    <td>Target</td>
+    <td>pizza-service.marcosotomarino.com</td>
+  </tr>
+  <tr>
+    <td>Classification</td>
+    <td>A03 Injection / A01 Broken Access Control</td>
+  </tr>
+  <tr>
+    <td>Severity</td>
+    <td>4</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>Demonstrated a complete attack chain from a self-registered diner account to full admin control. Used the SQL injection vulnerability (Attacks 1/8) to: (1) enumerate user roles and identify admin accounts (user 2 = admin + franchisee), (2) overwrite the admin's email and password via SQLi by copying pentest3's known password hash onto user 2, and (3) log in as the admin. With the admin JWT, created a new franchise ("Pwned Pizza", ID 4) and added a store ("Hacker HQ", store ID 2) — proving full administrative control over the business. This is a complete privilege escalation from anonymous registration to admin with persistent business impact.</td>
+  </tr>
+  <tr>
+    <td>Images</td>
+    <td>See below</td>
+  </tr>
+  <tr>
+    <td>Corrections</td>
+    <td>Fix the root cause: parameterized queries in <code>database.js:updateUser()</code>. Without SQL injection, this entire chain is impossible. Additionally, admin credential changes should require re-authentication or MFA.</td>
+  </tr>
+</table>
 
 **Kill chain overview:**
 
@@ -1006,18 +1133,85 @@ curl -s -X POST "https://pizza-service.marcosotomarino.com/api/franchise/4/store
 
 ## Summary of Findings
 
-| #   | Attack                           | OWASP Category                | Severity | Exploitable? |
-| --- | -------------------------------- | ----------------------------- | -------- | ------------ |
-| 1   | SQL Injection (Priv. Esc.)       | A03 Injection                 | 4        | YES          |
-| 2   | Unauth Franchise Deletion        | A01 Broken Access Control     | 4        | YES          |
-| 3   | Zero/Negative Price Orders       | A04 Insecure Design           | 3        | YES          |
-| 4   | Info Disclosure + Misconfig      | A05 Security Misconfiguration | 2        | YES          |
-| 5   | JWT Forgery (Default Secret)     | A02 Cryptographic Failures    | 0        | NO (patched) |
-| 6   | CORS Cross-Origin Exploitation   | A05 Security Misconfiguration | 3        | YES          |
-| 7   | SQLi via LIMIT/OFFSET Params     | A03 Injection                 | 2        | YES          |
-| 8   | SQLi Full Database Extraction    | A03 Injection                 | 4        | YES          |
-| 9   | Frontend Admin Disclosure        | A01 Broken Access Control     | 2        | YES          |
-| 10  | Full Kill Chain (Admin Takeover) | A03 Injection / A01 BAC       | 4        | YES          |
+<table>
+  <tr>
+    <th>#</th>
+    <th>Attack</th>
+    <th>OWASP Category</th>
+    <th>Severity</th>
+    <th>Exploitable?</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>SQL Injection (Priv. Esc.)</td>
+    <td>A03 Injection</td>
+    <td>4</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Unauth Franchise Deletion</td>
+    <td>A01 Broken Access Control</td>
+    <td>4</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Zero/Negative Price Orders</td>
+    <td>A04 Insecure Design</td>
+    <td>3</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>Info Disclosure + Misconfig</td>
+    <td>A05 Security Misconfiguration</td>
+    <td>2</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>JWT Forgery (Default Secret)</td>
+    <td>A02 Cryptographic Failures</td>
+    <td>0</td>
+    <td>NO (patched)</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>CORS Cross-Origin Exploitation</td>
+    <td>A05 Security Misconfiguration</td>
+    <td>3</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td>SQLi via LIMIT/OFFSET Params</td>
+    <td>A03 Injection</td>
+    <td>2</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>8</td>
+    <td>SQLi Full Database Extraction</td>
+    <td>A03 Injection</td>
+    <td>4</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>9</td>
+    <td>Frontend Admin Disclosure</td>
+    <td>A01 Broken Access Control</td>
+    <td>2</td>
+    <td>YES</td>
+  </tr>
+  <tr>
+    <td>10</td>
+    <td>Full Kill Chain (Admin Takeover)</td>
+    <td>A03 Injection / A01 BAC</td>
+    <td>4</td>
+    <td>YES</td>
+  </tr>
+</table>
 
 ## What Marco Patched vs. What Remains Open
 
