@@ -259,66 +259,100 @@ Reveals: Node.js runtime, body-parser module, file path prefix `/usr/src/app/` (
 
 ### Peer 2: Marco Sotomarino
 
-_Marco to add his self-attack records here (at least 5 attacks)._
-
-#### Attack 1
+#### Attack 1 — Unauthenticated Franchise Deletion
 
 <table style="width:100%; border-collapse:collapse;">
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Date</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Target</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Classification</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Severity</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Description</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Images</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Corrections</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Date</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">April 13, 2026</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Target</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">pizza-service.marcosotomarino.com</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Classification</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">A01 Broken Access Control</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Severity</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">4</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Description</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Sent an unauthenticated <code>DELETE</code> request to <code>/api/franchise/1</code> using Burp Repeater with no <code>Authorization</code> header. The server processed the request successfully and deleted the franchise. The endpoint does not enforce authentication or authorization checks, allowing any user to perform destructive actions.</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Images</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">
+
+<img src="images/self_unauth_franchise_delete.png" alt="Burp Repeater — unauthenticated DELETE franchise request succeeds" width="700">
+
+</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Corrections</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Require authentication and enforce admin role authorization before allowing franchise deletion.</td></tr>
 </table>
 
-#### Attack 2
+#### Attack 2 — Client-Side Price Manipulation
 
 <table style="width:100%; border-collapse:collapse;">
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Date</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Target</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Classification</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Severity</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Description</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Images</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Corrections</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Date</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">April 13, 2026</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Target</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">pizza-service.marcosotomarino.com</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Classification</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">A04 Insecure Design</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Severity</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">3</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Description</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Changed the <code>price</code> field of the order items to <code>0.0001</code> using Burp Repeater. The server accepted the request and processed the order using the manipulated prices instead of validating them against the menu. The backend trusts client-side input for pricing, allowing attackers to purchase items at arbitrary prices.</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Images</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">
+
+<img src="images/self_price_manipulation.png" alt="Burp Repeater — order accepted with manipulated price of 0.0001" width="700">
+
+</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Corrections</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Do not trust client-provided pricing. The backend should retrieve the correct price from the database using the <code>menuId</code> and ignore any price sent by the client.</td></tr>
 </table>
 
-#### Attack 3
+#### Attack 3 — Stack Trace Information Disclosure
 
 <table style="width:100%; border-collapse:collapse;">
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Date</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Target</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Classification</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Severity</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Description</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Images</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Corrections</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Date</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">April 13, 2026</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Target</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">pizza-service.marcosotomarino.com</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Classification</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">A05 Security Misconfiguration</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Severity</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">2</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Description</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Sent a malformed request to <code>PUT /api/auth</code> by replacing the JSON body with invalid input. The server responded with a detailed error message including a full stack trace and internal file paths. This reveals sensitive implementation details such as framework usage and backend structure, which can aid an attacker in further exploitation.</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Images</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">
+
+<img src="images/self_stack_trace_disclosure.png" alt="Burp Repeater — malformed auth request returns full stack trace" width="700">
+
+</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Corrections</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Do not expose stack traces in production. Replace detailed error responses with generic error messages and log the full error internally on the server.</td></tr>
 </table>
 
-#### Attack 4
+#### Attack 4 — CORS Misconfiguration
 
 <table style="width:100%; border-collapse:collapse;">
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Date</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Target</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Classification</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Severity</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Description</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Images</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Corrections</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Date</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">April 13, 2026</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Target</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">pizza-service.marcosotomarino.com</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Classification</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">A05 Security Misconfiguration</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Severity</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">3</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Description</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Sent a request to <code>GET /api/franchise</code> with a malicious <code>Origin</code> header (<code>https://evil-attacker.com</code>). The server responded by reflecting the origin in the <code>Access-Control-Allow-Origin</code> header and allowed credentials. The backend does not properly restrict trusted origins and allows any external site to make authenticated requests.</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Images</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">
+
+<img src="images/self_cors_misconfiguration.png" alt="Burp Repeater — evil origin reflected in CORS response headers" width="700">
+
+</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Corrections</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Restrict CORS to trusted domains only. Do not dynamically reflect the <code>Origin</code> header. Disable <code>Access-Control-Allow-Credentials</code> unless absolutely necessary.</td></tr>
 </table>
 
-#### Attack 5
+#### Attack 5 — Brute Force Login (No Rate Limiting)
 
 <table style="width:100%; border-collapse:collapse;">
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Date</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Target</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Classification</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Severity</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Description</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Images</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
-<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Corrections</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;"></td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Date</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">April 13, 2026</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Target</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">pizza-service.marcosotomarino.com</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Classification</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">A07 Identification and Authentication Failures</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Severity</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">2</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Description</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Used Burp Intruder to perform a brute force attack on the <code>PUT /api/auth</code> endpoint by testing multiple password values. The server allowed repeated login attempts without rate limiting or account lockout, enabling password guessing. The authentication mechanism does not prevent automated attacks, allowing an attacker to eventually gain unauthorized access to accounts.</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Images</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">
+
+<img src="images/self_brute_force_login.png" alt="Burp Intruder — multiple login attempts with no rate limiting" width="700">
+
+</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Corrections</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Implement rate limiting and account lockout mechanisms to mitigate brute force attacks. Additionally, monitor for suspicious login patterns to identify and respond to automated exploitation attempts.</td></tr>
+</table>
+
+#### Attack 6 — Invalid Menu ID Error Handling
+
+<table style="width:100%; border-collapse:collapse;">
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Date</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">April 11, 2026</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Target</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">pizza.marcosotomarino.com</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Classification</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">A05 Security Misconfiguration</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Severity</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">1</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Description</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Modified the <code>menuId</code> field in a <code>POST /api/order</code> request to an invalid value (<code>9999</code>). The server responded with a <code>500 Internal Server Error</code> and exposed internal stack trace details. This indicates improper input validation and error handling, revealing backend implementation details that could be leveraged by an attacker.</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Images</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">
+
+<img src="images/self_invalid_menuid_error.png" alt="Burp Repeater — invalid menuId triggers 500 with stack trace" width="700">
+
+</td></tr>
+<tr><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top; white-space:nowrap;"><strong>Corrections</strong></td><td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Validate all input before processing and return user-friendly error messages. Ensure that stack trace exposure is disabled in production environments to prevent sensitive information disclosure.</td></tr>
 </table>
 
 ---
@@ -954,31 +988,39 @@ Final state:
 
 ### What We Learned About Our Own Systems (Self-Attacks)
 
-Self-testing was the most eye-opening part of this exercise. Jay's self-attacks revealed 6 exploitable vulnerabilities (severities 2–4) in his own deployment — including SQL injection, unauthenticated franchise deletion, price manipulation, CORS misconfiguration, and information disclosure — before any peer ever touched the system. The lesson is clear: **an attacker's mindset applied to your own code surfaces issues that normal development and testing miss entirely.** Reading your own source code with the question "how would I abuse this?" is a fundamentally different activity than reading it to understand how it works.
+For both of us, self-testing turned out to be the most eye-opening part of this whole exercise. It's one thing to build an app that works — it's another to sit down and actively try to break it.
+
+Jay's self-attacks uncovered 6 exploitable vulnerabilities (severities 2–4) in his deployment — SQL injection, unauthenticated franchise deletion, price manipulation, CORS misconfiguration, and information disclosure — all before Marco ever touched the system. Just asking "how would I abuse this?" while reading his own code surfaced things that normal development and testing completely missed.
+
+Marco had a similar experience. His app looked fine through the frontend, but once he started intercepting requests with Burp Suite, real problems showed up. He found the same unauthenticated `DELETE /api/franchise` endpoint, a price manipulation bug where the server blindly trusted client-supplied values, stack traces leaking internal file paths, and a wide-open CORS configuration. After finding each issue, he patched it — adding auth checks, server-side price lookups, generic error responses, and a restricted origin allowlist.
+
+The takeaway for both of us: **thinking like an attacker against your own code is a fundamentally different activity than building or debugging it, and it finds things nothing else does.**
 
 ### What We Learned From Attacking Each Other (Peer Attacks)
 
-The asymmetry in the peer attacks was itself a learning. Jay found 10 exploitable issues on Marco's server, including a full kill chain from self-registered user to admin takeover. Marco's 5 attacks against Jay found that most endpoints were defended (3 severity-0 results), with only improper error handling (severity 1) and missing rate limiting (severity 2) as weaknesses. This difference likely reflects that Jay had already patched several vulnerabilities (like server-side price validation) after his own self-attack phase — demonstrating that **the self-attack phase directly improves your security posture before the peer even begins.**
+The results from our peer attacks were asymmetric, and that asymmetry itself was a lesson. Jay found 10 exploitable issues on Marco's server, including a full kill chain from self-registered user to admin takeover. Marco's 5 attacks against Jay found that most endpoints were already defended (3 severity-0 results), with only improper error handling (severity 1) and missing rate limiting (severity 2) as weaknesses. A big reason for that gap is that Jay had already patched vulnerabilities like server-side price validation during his self-attack phase — so **the self-attack phase directly hardened his system before the peer phase even started.**
 
-However, the fact that Marco's attacks focused on different vectors (Burp-based interception, brute force) than Jay's (curl-based injection, kill chains) also shows that **different testers bring different perspectives.** The brute force finding (no rate limiting) was something Jay's self-testing didn't flag, because he was focused on injection and access control.
+Our tooling and approaches were also quite different, and that mattered. Jay leaned on curl-based injection and chained exploits into kill chains. Marco used Burp Suite to intercept and modify requests, and ran Burp Intruder for brute force testing. That difference in technique meant we found different things — Marco's brute force test revealed that neither server had rate limiting on the login endpoint, something Jay's injection-focused self-testing never flagged. **Different testers really do bring different perspectives**, and the combination gives you much better coverage than either one alone.
+
+Even when Marco's attacks were blocked (like trying admin actions with a regular user token, or manipulating prices on Jay's already-patched server), seeing those defenses hold was still valuable — it confirmed the fixes actually worked in practice.
 
 ### Key Themes
 
-1. **A single unparameterized query can compromise an entire system.** The SQL injection in `database.js:updateUser()` was present on both servers and was the root cause behind the most severe attacks — privilege escalation, full database extraction (password hashes, schema, user roles), admin account takeover, and persistent business data manipulation. One fix (parameterized queries) would have blocked the entire kill chain.
+1. **A single unparameterized query can compromise an entire system.** The SQL injection in `database.js:updateUser()` was present on both our servers and was the root cause behind the most severe attacks — privilege escalation, full database extraction, admin account takeover, and persistent data manipulation. One fix (parameterized queries) would have blocked the entire kill chain.
 
-2. **Every state-changing endpoint needs authentication and authorization.** The `DELETE /api/franchise` endpoint lacked auth middleware on both servers, letting any anonymous user on the internet delete franchise data. This was a copy-paste oversight in the starter code that neither of us caught during normal development.
+2. **Every state-changing endpoint needs authentication and authorization.** The `DELETE /api/franchise` endpoint lacked auth middleware on both servers, letting any anonymous user delete franchise data. Neither of us caught this during normal development — it was a copy-paste oversight in the starter code, and it showed us that missing a single auth check on a critical endpoint can have serious consequences.
 
-3. **The server must be the source of truth for business logic.** Both servers initially accepted client-supplied prices without validation, allowing free or negative-price orders. Jay's server was patched before the peer phase (Marco's attack confirmed the fix worked), but Marco's was not. Trusting client input for pricing, quantities, or permissions is always exploitable.
+3. **The server must be the source of truth for business logic.** Both servers initially accepted client-supplied prices without validation, allowing free or negative-price orders. Jay patched this before the peer phase (Marco's attack confirmed the fix worked), but Marco's server still had the issue. You simply cannot trust client-provided values for pricing, quantities, or permissions.
 
-4. **Defense in depth works — and its absence is visible.** Marco changed the default admin credentials and JWT secret (defending against two of Jay's attacks), but left SQL injection open, which rendered those fixes irrelevant because SQLi provided an alternative path to admin access. No single fix is sufficient when multiple vulnerability classes exist.
+4. **Defense in depth works — and its absence is visible.** Marco changed the default admin credentials and JWT secret (which blocked two of Jay's attacks), but left SQL injection open, which gave Jay an alternative path to admin access anyway. No single fix is sufficient when multiple vulnerability classes exist.
 
-5. **Information disclosure gives attackers a roadmap.** Stack traces revealing file paths and module versions, database hostnames in `/api/docs`, `X-Powered-By: Express` headers, and `robots.txt` advertising `/admin-dashboard/` all helped the attacker map internal architecture and plan targeted attacks. Production environments should minimize what they reveal.
+5. **Information disclosure gives attackers a roadmap.** Stack traces with file paths, database hostnames in `/api/docs`, `X-Powered-By: Express` headers, and `robots.txt` advertising `/admin-dashboard/` all helped map internal architecture and plan targeted attacks. Both of us found that our production environments were revealing way too much.
 
 6. **CORS misconfiguration is a silent, high-impact vulnerability.** Both servers reflected arbitrary origins with `Access-Control-Allow-Credentials: true`, meaning any malicious website could make authenticated API calls on behalf of a logged-in user. Combined with JWTs that never expire and are stored in `localStorage`, this creates a persistent credential theft vector that requires no user interaction beyond visiting a malicious page.
 
-7. **Rate limiting is invisible until someone tests for it.** Neither server implemented rate limiting on login endpoints. This wasn't caught by self-testing focused on injection and access control — it took Marco's Burp Intruder approach to surface it. Brute force protection is easy to overlook because the system "works fine" without it.
+7. **Rate limiting is invisible until someone tests for it.** Neither server had rate limiting on login endpoints. This wasn't caught by self-testing focused on injection and access control — it took Marco's Burp Intruder approach to surface it. Brute force protection is easy to overlook because the system "works fine" without it.
 
-8. **Attackers chain vulnerabilities.** The most impactful attack (Attack 10 — full kill chain) wasn't a single exploit but a combination: information disclosure revealed the schema, SQL injection extracted credentials, credential overwrite enabled admin login, and the admin JWT enabled business data modification. Fixing any link in the chain would have limited the blast radius.
+8. **Attackers chain vulnerabilities.** The most impactful attack (Jay's Attack 10 — full kill chain) wasn't a single exploit but a combination: information disclosure revealed the schema, SQL injection extracted credentials, credential overwrite enabled admin login, and the admin JWT enabled business data modification. Fixing any single link in the chain would have limited the blast radius.
 
 ### Recommendations (Priority Order)
 
@@ -995,23 +1037,23 @@ However, the fact that Marco's attacks focused on different vectors (Burp-based 
 </tr>
 <tr>
   <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Critical</td>
-  <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Auth middleware on <code>DELETE /api/franchise</code></td>
-  <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Prevents anonymous data destruction</td>
+  <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Auth middleware on every sensitive endpoint, especially <code>DELETE /api/franchise</code></td>
+  <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Prevents anonymous data destruction; admin actions restricted to verified users</td>
 </tr>
 <tr>
   <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">High</td>
   <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Server-side price validation in order endpoint</td>
-  <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Prevents free/negative-price orders</td>
+  <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Prevents free/negative-price orders; never trust client-provided values</td>
 </tr>
 <tr>
   <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">High</td>
   <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">CORS allowlist (only production frontend origin)</td>
-  <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Prevents cross-origin credential theft</td>
+  <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Prevents cross-origin credential theft; no credentials for untrusted domains</td>
 </tr>
 <tr>
   <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Medium</td>
   <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Strip stack traces in production (<code>NODE_ENV=production</code>)</td>
-  <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Stops information leakage to attackers</td>
+  <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Stops information leakage; return generic error messages to clients</td>
 </tr>
 <tr>
   <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Medium</td>
@@ -1034,3 +1076,11 @@ However, the fact that Marco's attacks focused on different vectors (Burp-based 
   <td style="padding:6px 12px; border:1px solid #ddd; vertical-align:top;">Proper error handling for bad input</td>
 </tr>
 </table>
+
+### Final Reflection
+
+This assignment showed both of us that building a working application is not the same as building a secure one. Our apps worked great from a user's perspective — but the moment we started poking at them with Burp Suite and curl, real vulnerabilities fell out everywhere.
+
+The combination of self-testing and peer-testing was what made this exercise so effective. Self-testing helped us each identify and fix our biggest issues before anyone else saw them, and peer-testing brought fresh eyes and different techniques that caught things we'd missed on our own. Security really does improve through iteration — test, fix, retest — and having a second person involved makes that cycle significantly more thorough.
+
+If there's one thing we're both taking away from this, it's that security can't be an afterthought or something you assume is fine once the app is deployed. It's an ongoing process that requires actively trying to break your own stuff, and ideally having someone else try to break it too.
